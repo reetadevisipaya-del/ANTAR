@@ -1,0 +1,120 @@
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { Session, User } from '@supabase/supabase-js'
+import { supabase } from './supabase'
+import type { AppRole, Membership, Portal } from './types'
+
+type AuthContextValue = {
+  session: Session | null
+  user: User | null
+  membership: Membership | null
+  loading: boolean
+  signIn: (email: string, password: string, portal: Portal) => Promise<void>
+  signOut: () => Promise<void>
+}
+
+const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+
+function roleMatchesPortal(role: AppRole, portal: Portal) {
+  if (portal === 'parent') return role === 'parent'
+  if (portal === 'admin') return role === 'institute_admin'
+  return ['teacher', 'special_educator', 'therapist'].includes(role)
+}
+
+async function loadMembership(userId: string): Promise<Membership | null> {
+  const { data, error } = await supabase
+    .from('institution_members')
+    .select('role,status,institution_id,institutions(name)')
+    .eq('user_id', userId)
+    .eq('status', 'active')
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+  return data as Membership | null
+}
+
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [session, setSession] = useState<Session | null>(null)
+  const [membership, setMembership] = useState<Membership | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!mounted) return
+      setSession(data.session)
+      if (data.session?.user) {
+        try {
+          setMembership(await loadMembership(data.session.user.id))
+        } catch {
+          setMembership(null)
+        }
+      }
+      setLoading(false)
+    })
+
+    const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, nextSession) => {
+      setSession(nextSession)
+      if (nextSession?.user) {
+        try {
+          setMembership(await loadMembership(nextSession.user.id))
+        } catch {
+          setMembership(null)
+        }
+      } else {
+        setMembership(null)
+      }
+      setLoading(false)
+    })
+
+    return () => {
+      mounted = false
+      subscription.subscription.unsubscribe()
+    }
+  }, [])
+
+  const value = useMemo<AuthContextValue>(() => ({
+    session,
+    user: session?.user ?? null,
+    membership,
+    loading,
+    signIn: async (email, password, portal) => {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw new Error('Incorrect email or password.')
+
+      const activeMembership = await loadMembership(data.user.id)
+      if (!activeMembership) {
+        await supabase.auth.signOut()
+        throw new Error('This account does not have an active ANTAR membership.')
+      }
+
+      if (!roleMatchesPortal(activeMembership.role, portal)) {
+        const correctPortal =
+          activeMembership.role === 'parent'
+            ? 'Parent Portal'
+            : activeMembership.role === 'institute_admin'
+              ? 'Institute Admin Portal'
+              : 'Staff Portal'
+        await supabase.auth.signOut()
+        throw new Error(`This account belongs to the ${correctPortal}.`)
+      }
+
+      setMembership(activeMembership)
+      setSession(data.session)
+    },
+    signOut: async () => {
+      await supabase.auth.signOut()
+      setMembership(null)
+      setSession(null)
+    },
+  }), [session, membership, loading])
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+export function useAuth() {
+  const value = useContext(AuthContext)
+  if (!value) throw new Error('useAuth must be used inside AuthProvider')
+  return value
+}

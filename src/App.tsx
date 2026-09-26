@@ -22,9 +22,260 @@ function AdminWorkspace({institutionId}:{institutionId:string}){const [tab,setTa
 function AssignmentRow({member,children,onAssign}:{member:Member;children:Child[];onAssign:(id:string)=>void}){const [id,setId]=useState('');return <div className="assign-row"><div><strong>{member.profiles?.full_name||roleLabel(member.role)}</strong><small>{roleLabel(member.role)}</small></div><select value={id} onChange={e=>setId(e.target.value)}><option value="">Select child…</option>{children.filter(c=>c.active).map(c=><option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>)}</select><button className="mini-button" disabled={!id} onClick={()=>{onAssign(id);setId('')}}>Assign</button></div>}
 function Relation({text,onOff}:{text:string;onOff:()=>void}){return <div className="person-row"><strong>{text}</strong><button className="mini-button danger" onClick={onOff}>Deactivate</button></div>}
 
-type StaffClass={id:string;name:string;section?:string;academic_year?:string;count:number}
-type StaffChild=Child & {todayStatus?:string}
-function StaffPortal({userId}:{userId:string}){const [tab,setTab]=useState<'home'|'classes'|'children'|'attendance'>('home');const [classes,setClasses]=useState<StaffClass[]>([]);const [children,setChildren]=useState<StaffChild[]>([]);const [selectedClass,setSelectedClass]=useState('');const [attendanceDate,setAttendanceDate]=useState(new Date().toISOString().slice(0,10));const [attendance,setAttendance]=useState<Record<string,string>>({});const [loading,setLoading]=useState(true);const [message,setMessage]=useState('');async function load(){setLoading(true);setMessage('');const classRows=await supabase.from('class_staff_assignments').select('class_id,classes(id,name,section,academic_year),active').eq('staff_id',userId).eq('active',true);if(classRows.error){setMessage(classRows.error.message);setLoading(false);return}const classList=(classRows.data||[]).map((row:any)=>({id:row.classes.id,name:row.classes.name,section:row.classes.section,academic_year:row.classes.academic_year,count:0}));const childRows=await supabase.from('staff_child_assignments').select('child_id,children(id,first_name,last_name,grade_or_program,section,student_identifier,support_profile,active)').eq('staff_id',userId).eq('active',true);if(childRows.error){setMessage(childRows.error.message);setLoading(false);return}const assigned=((childRows.data||[]).map((r:any)=>r.children).filter(Boolean)) as StaffChild[];for(const c of classList){const enroll=await supabase.from('class_enrollments').select('child_id',{count:'exact',head:true}).eq('class_id',c.id).eq('active',true);c.count=enroll.count||0}setClasses(classList);setChildren(assigned);if(!selectedClass&&classList[0])setSelectedClass(classList[0].id);setLoading(false)}useEffect(()=>{void load()},[userId]);const currentClass=classes.find(c=>c.id===selectedClass);const classChildren=useMemo(()=>children.filter(c=>!currentClass||c.grade_or_program===currentClass.name&&(currentClass.section?c.section===currentClass.section:true)),[children,currentClass]);async function loadAttendance(){if(!selectedClass)return;const ids=classChildren.map(c=>c.id);if(!ids.length){setAttendance({});return}const {data,error}=await supabase.from('attendance').select('child_id,status').eq('attendance_date',attendanceDate).in('child_id',ids);if(error){setMessage(error.message);return}const next:Record<string,string>={};ids.forEach(id=>next[id]='present');(data||[]).forEach((r:any)=>next[r.child_id]=r.status);setAttendance(next)}useEffect(()=>{void loadAttendance()},[selectedClass,attendanceDate,children.length]);async function saveAttendance(){if(!classChildren.length)return;setMessage('Saving attendance…');const payload=classChildren.map(c=>({child_id:c.id,attendance_date:attendanceDate,status:attendance[c.id]||'present',recorded_by:userId}));const {error}=await supabase.from('attendance').upsert(payload,{onConflict:'child_id,attendance_date'});if(error){setMessage(error.message);return}await loadAttendance();setMessage('Attendance saved successfully.')}function markAll(status:string){const next:Record<string,string>={};classChildren.forEach(c=>next[c.id]=status);setAttendance(next)}return <div className="staff-portal"><div className="staff-nav"><button className={tab==='home'?'active':''} onClick={()=>setTab('home')}><School size={17}/>Home</button><button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>Assigned Classes</button><button className={tab==='children'?'active':''} onClick={()=>setTab('children')}><Users size={17}/>Assigned Children</button><button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button></div>{message&&<div className="status-message admin-status">{message}</div>}{loading?<div className="panel">Loading staff workspace…</div>:tab==='home'?<><div className="dashboard-hero"><span className="eyebrow">Staff Portal</span><h1>Your classes and children, in one place.</h1><p>Everything below is loaded from your authenticated Supabase assignments.</p></div><div className="feature-grid"><button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Open classes and class rosters</small></span><span className="arrow">→</span></button><button className="feature-card" onClick={()=>setTab('children')}><span className="feature-icon"><Users size={21}/></span><span><strong>{children.length} assigned children</strong><small>View authorized child profiles</small></span><span className="arrow">→</span></button><button className="feature-card" onClick={()=>setTab('attendance')}><span className="feature-icon"><ClipboardCheck size={21}/></span><span><strong>Attendance</strong><small>Mark and save class attendance</small></span><span className="arrow">→</span></button></div></>:tab==='classes'?<div className="panel"><div className="panel-title"><div><h2>Assigned Classes</h2><p>Classes are derived from class_staff_assignments.</p></div></div><div className="feature-grid">{classes.map(c=><button key={c.id} className="feature-card" onClick={()=>{setSelectedClass(c.id);setTab('attendance')}}><span className="feature-icon"><School size={21}/></span><span><strong>{c.name}{c.section?` — ${c.section}`:''}</strong><small>{c.count} children · {c.academic_year||'Academic year not set'}</small></span><span className="arrow">→</span></button>)}</div></div>:tab==='children'?<div className="panel"><div className="panel-title"><div><h2>Assigned Children</h2><p>{children.length} children available through your staff assignments.</p></div></div><div className="cards-list">{children.map(c=><div className="person-row" key={c.id}><div><strong>{c.first_name} {c.last_name}</strong><small>{c.grade_or_program||'Class not set'}{c.section?` · Section ${c.section}`:''}</small></div><span className="badge active">Assigned</span></div>)}</div></div>:<div className="panel"><div className="panel-title"><div><h2>Attendance</h2><p>Select a class and date, then save the real Supabase attendance records.</p></div></div><div className="attendance-toolbar"><label>Class<select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)}>{classes.map(c=><option key={c.id} value={c.id}>{c.name}{c.section?` — ${c.section}`:''}</option>)}</select></label><label>Date<input type="date" value={attendanceDate} onChange={e=>setAttendanceDate(e.target.value)}/></label><button className="mini-button" onClick={()=>markAll('present')}>Mark all present</button></div><div className="cards-list">{classChildren.map(c=>{const status=attendance[c.id]||'present';return <div className="attendance-row" key={c.id}><div><strong>{c.first_name} {c.last_name}</strong><small>{c.grade_or_program}{c.section?` · Section ${c.section}`:''}</small></div><div className="attendance-actions">{['present','absent','late','excused'].map(s=><button key={s} className={`attendance-pill ${status===s?'selected':''}`} onClick={()=>setAttendance(prev=>({...prev,[c.id]:s}))}>{roleLabel(s)}</button>)}</div></div>})}</div><div className="attendance-save"><button className="primary-button" onClick={()=>void saveAttendance()}><CheckCircle2 size={17}/> Save Attendance</button></div></div>}</div>}
+type StaffClass={id:string;name:string;section?:string;academic_year?:string}
+type StaffChild=Child
+function StaffPortal({userId}:{userId:string}){
+  const [tab,setTab]=useState<'home'|'classes'|'children'|'attendance'>('home')
+  const [classes,setClasses]=useState<StaffClass[]>([])
+  const [rosters,setRosters]=useState<Record<string,StaffChild[]>>({})
+  const [selectedClass,setSelectedClass]=useState('')
+  const [attendanceDate,setAttendanceDate]=useState(new Date().toISOString().slice(0,10))
+  const [attendance,setAttendance]=useState<Record<string,'present'|'absent'>>({})
+  const [loading,setLoading]=useState(true)
+  const [message,setMessage]=useState('')
+
+  async function load(){
+    setLoading(true)
+    setMessage('')
+
+    const assigned=await supabase
+      .from('class_staff_assignments')
+      .select('class_id')
+      .eq('staff_id',userId)
+      .eq('active',true)
+
+    if(assigned.error){
+      setMessage(assigned.error.message)
+      setLoading(false)
+      return
+    }
+
+    const classIds=[...new Set((assigned.data||[]).map((x:any)=>x.class_id).filter(Boolean))]
+    if(!classIds.length){
+      setClasses([])
+      setRosters({})
+      setLoading(false)
+      return
+    }
+
+    const classRes=await supabase
+      .from('classes')
+      .select('id,name,section,academic_year')
+      .in('id',classIds)
+      .eq('active',true)
+      .order('name')
+
+    if(classRes.error){
+      setMessage(classRes.error.message)
+      setLoading(false)
+      return
+    }
+
+    const classList=(classRes.data||[]) as StaffClass[]
+    const nextRosters:Record<string,StaffChild[]>={}
+
+    for(const cls of classList){
+      const enroll=await supabase
+        .from('class_enrollments')
+        .select('child_id')
+        .eq('class_id',cls.id)
+        .eq('active',true)
+
+      if(enroll.error){
+        setMessage(enroll.error.message)
+        nextRosters[cls.id]=[]
+        continue
+      }
+
+      const childIds=[...new Set((enroll.data||[]).map((x:any)=>x.child_id).filter(Boolean))]
+      if(!childIds.length){
+        nextRosters[cls.id]=[]
+        continue
+      }
+
+      const childRes=await supabase
+        .from('children')
+        .select('id,first_name,last_name,grade_or_program,section,student_identifier,support_profile,active')
+        .in('id',childIds)
+        .eq('active',true)
+        .order('first_name')
+
+      if(childRes.error){
+        setMessage(childRes.error.message)
+        nextRosters[cls.id]=[]
+      }else{
+        nextRosters[cls.id]=(childRes.data||[]) as StaffChild[]
+      }
+    }
+
+    setClasses(classList)
+    setRosters(nextRosters)
+    setSelectedClass(prev=>prev&&classList.some(c=>c.id===prev)?prev:(classList[0]?.id||''))
+    setLoading(false)
+  }
+
+  useEffect(()=>{void load()},[userId])
+
+  const classChildren=useMemo(()=>selectedClass?(rosters[selectedClass]||[]):[],[rosters,selectedClass])
+  const allChildren=useMemo(()=>{
+    const map=new Map<string,StaffChild>()
+    Object.values(rosters).flat().forEach(c=>map.set(c.id,c))
+    return [...map.values()]
+  },[rosters])
+
+  async function loadAttendance(){
+    if(!selectedClass||!classChildren.length){
+      setAttendance({})
+      return
+    }
+    const ids=classChildren.map(c=>c.id)
+    const res=await supabase
+      .from('attendance')
+      .select('child_id,status')
+      .eq('attendance_date',attendanceDate)
+      .in('child_id',ids)
+
+    if(res.error){
+      setMessage(res.error.message)
+      return
+    }
+
+    const next:Record<string,'present'|'absent'>={}
+    classChildren.forEach(c=>next[c.id]='present')
+    ;(res.data||[]).forEach((r:any)=>{
+      if(r.status==='present'||r.status==='absent') next[r.child_id]=r.status
+    })
+    setAttendance(next)
+  }
+
+  useEffect(()=>{void loadAttendance()},[selectedClass,attendanceDate,rosters])
+
+  async function saveAttendance(){
+    if(!classChildren.length){
+      setMessage('No students are enrolled in this class yet.')
+      return
+    }
+
+    setMessage('Saving attendance…')
+    const rows=classChildren.map(c=>({
+      child_id:c.id,
+      attendance_date:attendanceDate,
+      status:attendance[c.id]||'present',
+      recorded_by:userId,
+    }))
+
+    const res=await supabase
+      .from('attendance')
+      .upsert(rows,{onConflict:'child_id,attendance_date'})
+
+    if(res.error){
+      setMessage(res.error.message)
+      return
+    }
+
+    await loadAttendance()
+    setMessage('Attendance saved successfully.')
+  }
+
+  function markAllPresent(){
+    const next:Record<string,'present'|'absent'>={}
+    classChildren.forEach(c=>next[c.id]='present')
+    setAttendance(next)
+  }
+
+  return <div className="staff-portal">
+    <div className="staff-nav">
+      <button className={tab==='home'?'active':''} onClick={()=>setTab('home')}><School size={17}/>Home</button>
+      <button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>My Classes</button>
+      <button className={tab==='children'?'active':''} onClick={()=>setTab('children')}><Users size={17}/>Students</button>
+      <button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>
+    </div>
+
+    {message&&<div className="status-message admin-status">{message}</div>}
+
+    {loading?<div className="panel">Loading your assigned classes…</div>:
+    tab==='home'?<>
+      <div className="dashboard-hero">
+        <span className="eyebrow">Teacher Attendance</span>
+        <h1>Simple class attendance.</h1>
+        <p>Your institute assigns classes. You open a class, mark each student Present or Absent, and save.</p>
+      </div>
+      <div className="feature-grid">
+        <button className="feature-card" onClick={()=>setTab('classes')}>
+          <span className="feature-icon"><BookOpen size={21}/></span>
+          <span><strong>{classes.length} assigned classes</strong><small>View the classes assigned by your institute</small></span><span className="arrow">→</span>
+        </button>
+        <button className="feature-card" onClick={()=>setTab('children')}>
+          <span className="feature-icon"><Users size={21}/></span>
+          <span><strong>{allChildren.length} students</strong><small>Students enrolled in your assigned classes</small></span><span className="arrow">→</span>
+        </button>
+        <button className="feature-card" onClick={()=>setTab('attendance')}>
+          <span className="feature-icon"><ClipboardCheck size={21}/></span>
+          <span><strong>Mark attendance</strong><small>Present or Absent, then save</small></span><span className="arrow">→</span>
+        </button>
+      </div>
+    </>:
+    tab==='classes'?<div className="panel">
+      <div className="panel-title"><div><h2>My Classes</h2><p>These classes are assigned to your Teacher account by the institute.</p></div></div>
+      <div className="feature-grid">
+        {classes.map(c=>{
+          const count=(rosters[c.id]||[]).length
+          return <button key={c.id} className="feature-card" onClick={()=>{setSelectedClass(c.id);setTab('attendance')}}>
+            <span className="feature-icon"><School size={21}/></span>
+            <span><strong>{c.name}{c.section?` — Section ${c.section}`:''}</strong><small>{count} student{count===1?'':'s'} · {c.academic_year||'Academic year'}</small></span>
+            <span className="arrow">→</span>
+          </button>
+        })}
+      </div>
+    </div>:
+    tab==='children'?<div className="panel">
+      <div className="panel-title"><div><h2>Students by Class</h2><p>Open Attendance to mark a student's daily status.</p></div></div>
+      {classes.map(c=><div key={c.id} className="class-roster-block">
+        <h3>{c.name}{c.section?` — Section ${c.section}`:''}</h3>
+        <div className="cards-list">
+          {(rosters[c.id]||[]).length?(rosters[c.id]||[]).map(child=><div className="person-row" key={child.id}>
+            <div><strong>{child.first_name} {child.last_name}</strong><small>{child.grade_or_program}{child.section?` · Section ${child.section}`:''}</small></div>
+            <button className="mini-button" onClick={()=>{setSelectedClass(c.id);setTab('attendance')}}>Attendance</button>
+          </div>):<p className="helper">No demo students enrolled yet.</p>}
+        </div>
+      </div>)}
+    </div>:
+    <div className="panel">
+      <div className="panel-title"><div><h2>Attendance</h2><p>Choose a class and date. Mark Present or Absent, then save the record.</p></div></div>
+
+      <div className="attendance-toolbar">
+        <label>Class
+          <select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)}>
+            {classes.map(c=><option key={c.id} value={c.id}>{c.name}{c.section?` — ${c.section}`:''}</option>)}
+          </select>
+        </label>
+        <label>Date
+          <input type="date" value={attendanceDate} onChange={e=>setAttendanceDate(e.target.value)}/>
+        </label>
+        <button className="mini-button" onClick={markAllPresent}>Mark all present</button>
+      </div>
+
+      <div className="cards-list">
+        {classChildren.length?classChildren.map(child=>{
+          const status=attendance[child.id]||'present'
+          return <div className="attendance-row" key={child.id}>
+            <div><strong>{child.first_name} {child.last_name}</strong><small>{child.grade_or_program}{child.section?` · Section ${child.section}`:''}</small></div>
+            <div className="attendance-actions">
+              <button className={`attendance-pill ${status==='present'?'selected':''}`} onClick={()=>setAttendance(prev=>({...prev,[child.id]:'present'}))}>Present</button>
+              <button className={`attendance-pill ${status==='absent'?'selected':''}`} onClick={()=>setAttendance(prev=>({...prev,[child.id]:'absent'}))}>Absent</button>
+            </div>
+          </div>
+        }):<p className="helper">No demo students enrolled in this class yet.</p>}
+      </div>
+
+      <div className="attendance-save">
+        <button className="primary-button" disabled={!classChildren.length} onClick={()=>void saveAttendance()}>
+          <CheckCircle2 size={17}/> Save Attendance
+        </button>
+      </div>
+    </div>}
+  </div>
+}
 
 function ProtectedApp(){const {user,membership,loading,signOut}=useAuth();const loc=useLocation();if(loading)return <Shell><div className="loading-screen">Loading ANTAR…</div></Shell>;if(!user||!membership)return <Navigate to="/" replace state={{from:loc}}/>;const institutionName=membership.institutions?.name??'Your institution',role=membership.role;return <Shell><section className="dashboard-shell"><header className="dashboard-header"><Brand/><div className="header-actions"><div className="account-chip"><small>{institutionName}</small><strong>{roleLabel(role)}</strong></div><button className="secondary-button" onClick={()=>void signOut()}><LogOut size={17}/> Logout</button></div></header><div className="dashboard-content">{role==='institute_admin'?<AdminWorkspace institutionId={membership.institution_id}/>:role==='parent'?<ParentPortal userId={user.id}/>:<StaffPortal userId={user.id}/>}<div className="identity-strip"><ShieldCheck size={18}/><span>Protected session</span><span>{user.email}</span><span>{institutionName}</span></div></div></section></Shell>}
 export default function App(){return <Routes><Route path="/" element={<Landing/>}/><Route path="/login/:portal" element={<Login/>}/><Route path="/reset-password" element={<ResetPassword/>}/><Route path="/app" element={<ProtectedApp/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>}

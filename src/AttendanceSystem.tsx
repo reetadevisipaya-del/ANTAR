@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, CheckCircle2, ClipboardCheck, School, Users } from 'lucide-react'
+import { BookOpen, CheckCircle2, ClipboardCheck, Plus, School, Trash2, Users } from 'lucide-react'
 import { supabase } from './supabase'
 
 type StaffClass = {
@@ -40,12 +40,15 @@ const label = (value?: string) =>
   value ? value.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''
 
 export function StaffAttendancePortal({ userId }: { userId: string }) {
-  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'attendance'>('home')
+  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'homework' | 'attendance'>('home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
   const [selectedClass, setSelectedClass] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [attendance, setAttendance] = useState<Record<string, 'present' | 'absent'>>({})
+  const [homework, setHomework] = useState<Array<{homework_id:string;title:string;details?:string;homework_date:string;due_at?:string}>>([])
+  const [homeworkTitle, setHomeworkTitle] = useState('')
+  const [homeworkDetails, setHomeworkDetails] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -53,7 +56,6 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
   async function loadClasses() {
     setLoading(true)
     setMessage('')
-
     const { data, error } = await supabase.rpc('staff_my_classes')
     if (error) {
       setMessage(error.message)
@@ -61,224 +63,199 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
       setLoading(false)
       return
     }
-
-    const next = ((data || []) as StaffClass[]).map(row => ({
-      ...row,
-      student_count: Number(row.student_count || 0),
-    }))
+    const next = ((data || []) as StaffClass[]).map(row => ({...row, student_count:Number(row.student_count || 0)}))
     setClasses(next)
-    setSelectedClass(current =>
-      current && next.some(c => c.class_id === current) ? current : (next[0]?.class_id || ''),
-    )
+    setSelectedClass(current => current && next.some(c => c.class_id === current) ? current : (next[0]?.class_id || ''))
     setLoading(false)
   }
 
-  async function loadRoster(classId: string) {
-    if (!classId) return
-    const { data, error } = await supabase.rpc('staff_class_roster', { p_class_id: classId })
-    if (error) {
-      setMessage(error.message)
-      return
-    }
-    setRosters(prev => ({ ...prev, [classId]: (data || []) as Student[] }))
+  async function loadRoster(classId:string) {
+    if(!classId) return
+    const {data,error}=await supabase.rpc('staff_class_roster',{p_class_id:classId})
+    if(error){setMessage(error.message);return}
+    setRosters(prev=>({...prev,[classId]:(data||[]) as Student[]}))
   }
 
-  async function loadAttendance(classId: string, attendanceDate: string) {
-    if (!classId) return
-    const roster = rosters[classId] || []
-    if (!roster.length) {
-      setAttendance({})
-      return
-    }
-
-    const { data, error } = await supabase.rpc('staff_class_attendance', {
-      p_class_id: classId,
-      p_date: attendanceDate,
-    })
-    if (error) {
-      setMessage(error.message)
-      return
-    }
-
-    const next: Record<string, 'present' | 'absent'> = {}
-    roster.forEach(student => {
-      next[student.child_id] = 'present'
-    })
-    ;(data || []).forEach((row: { child_id: string; status: string | null }) => {
-      if (row.status === 'present' || row.status === 'absent') next[row.child_id] = row.status
+  async function loadAttendance(classId:string, attendanceDate:string) {
+    if(!classId) return
+    const roster=rosters[classId]||[]
+    if(!roster.length){setAttendance({});return}
+    const {data,error}=await supabase.rpc('staff_class_attendance',{p_class_id:classId,p_date:attendanceDate})
+    if(error){setMessage(error.message);return}
+    const next:Record<string,'present'|'absent'>={}
+    roster.forEach(student=>{next[student.child_id]='present'})
+    ;(data||[]).forEach((row:{child_id:string;status:string|null})=>{
+      if(row.status==='present'||row.status==='absent') next[row.child_id]=row.status
     })
     setAttendance(next)
   }
 
-  useEffect(() => {
-    void loadClasses()
-  }, [userId])
+  async function loadHomework(classId:string, homeworkDate:string) {
+    if(!classId){setHomework([]);return}
+    const {data,error}=await supabase.rpc('staff_class_homework',{p_class_id:classId,p_date:homeworkDate})
+    if(error){setMessage(error.message);return}
+    setHomework((data||[]) as typeof homework)
+  }
 
-  useEffect(() => {
-    if (!selectedClass) return
-    if (!rosters[selectedClass]) {
-      void loadRoster(selectedClass)
-      return
-    }
-    void loadAttendance(selectedClass, date)
-  }, [selectedClass, date, rosters])
+  useEffect(()=>{void loadClasses()},[userId])
 
-  async function openClass(classId: string) {
+  useEffect(()=>{
+    if(!selectedClass) return
+    if(!rosters[selectedClass]){void loadRoster(selectedClass);return}
+    void loadAttendance(selectedClass,date)
+  },[selectedClass,date,rosters])
+
+  useEffect(()=>{
+    if(selectedClass && tab==='homework') void loadHomework(selectedClass,date)
+  },[selectedClass,date,tab])
+
+  async function openClass(classId:string){
     setSelectedClass(classId)
-    if (!rosters[classId]) await loadRoster(classId)
+    if(!rosters[classId]) await loadRoster(classId)
     setTab('attendance')
   }
 
-  async function saveAttendance() {
-    const roster = rosters[selectedClass] || []
-    if (!selectedClass || !roster.length) {
-      setMessage('No students are enrolled in this class.')
-      return
-    }
-
+  async function saveAttendance(){
+    const roster=rosters[selectedClass]||[]
+    if(!selectedClass||!roster.length){setMessage('No students are enrolled in this class.');return}
     setSaving(true)
     setMessage('Saving attendance…')
-    const records = roster.map(student => ({
-      child_id: student.child_id,
-      status: attendance[student.child_id] || 'present',
-    }))
-
-    const { error } = await supabase.rpc('staff_save_class_attendance', {
-      p_class_id: selectedClass,
-      p_date: date,
-      p_records: records,
-    })
-
-    if (error) {
-      setMessage(error.message)
-      setSaving(false)
-      return
-    }
-
-    await loadAttendance(selectedClass, date)
+    const records=roster.map(student=>({child_id:student.child_id,status:attendance[student.child_id]||'present'}))
+    const {error}=await supabase.rpc('staff_save_class_attendance',{p_class_id:selectedClass,p_date:date,p_records:records})
+    if(error){setMessage(error.message);setSaving(false);return}
+    await loadAttendance(selectedClass,date)
     setMessage('Attendance saved. Parent Portal will show the same record.')
     setSaving(false)
   }
 
-  function markAllPresent() {
-    const next: Record<string, 'present' | 'absent'> = {}
-    ;(rosters[selectedClass] || []).forEach(student => {
-      next[student.child_id] = 'present'
+  async function addHomework(){
+    if(!selectedClass){setMessage('Choose a class first.');return}
+    if(!homeworkTitle.trim()){setMessage('Enter the homework title.');return}
+    setSaving(true)
+    setMessage('Adding homework…')
+    const {error}=await supabase.rpc('staff_add_class_homework',{
+      p_class_id:selectedClass,
+      p_date:date,
+      p_title:homeworkTitle.trim(),
+      p_details:homeworkDetails.trim()||null,
+      p_due_at:null,
     })
+    if(error){setMessage(error.message);setSaving(false);return}
+    setHomeworkTitle('')
+    setHomeworkDetails('')
+    await loadHomework(selectedClass,date)
+    setMessage('Homework added for the whole class. Linked parents can see it now.')
+    setSaving(false)
+  }
+
+  async function removeHomework(homeworkId:string){
+    const {error}=await supabase.rpc('staff_remove_class_homework',{p_homework_id:homeworkId})
+    if(error){setMessage(error.message);return}
+    await loadHomework(selectedClass,date)
+    setMessage('Homework removed from the daily board.')
+  }
+
+  function markAllPresent(){
+    const next:Record<string,'present'|'absent'>={}
+    ;(rosters[selectedClass]||[]).forEach(student=>{next[student.child_id]='present'})
     setAttendance(next)
   }
 
-  const allStudents = useMemo(() => {
-    const unique = new Map<string, Student>()
-    Object.values(rosters).flat().forEach(student => unique.set(student.child_id, student))
+  const allStudents=useMemo(()=>{
+    const unique=new Map<string,Student>()
+    Object.values(rosters).flat().forEach(student=>unique.set(student.child_id,student))
     return [...unique.values()]
-  }, [rosters])
+  },[rosters])
 
-  async function loadAllRosters() {
-    await Promise.all(classes.map(c => loadRoster(c.class_id)))
-  }
+  useEffect(()=>{
+    if(tab==='students') void Promise.all(classes.map(c=>loadRoster(c.class_id)))
+  },[tab,classes.length])
 
-  useEffect(() => {
-    if (tab === 'students') void loadAllRosters()
-  }, [tab, classes.length])
-
-  const currentClass = classes.find(c => c.class_id === selectedClass)
-  const roster = rosters[selectedClass] || []
+  const currentClass=classes.find(c=>c.class_id===selectedClass)
+  const roster=rosters[selectedClass]||[]
 
   return <div className="staff-portal">
     <div className="staff-nav">
-      <button className={tab === 'home' ? 'active' : ''} onClick={() => setTab('home')}><School size={17}/>Home</button>
-      <button className={tab === 'classes' ? 'active' : ''} onClick={() => setTab('classes')}><BookOpen size={17}/>My Classes</button>
-      <button className={tab === 'students' ? 'active' : ''} onClick={() => setTab('students')}><Users size={17}/>Students</button>
-      <button className={tab === 'attendance' ? 'active' : ''} onClick={() => setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>
+      <button className={tab==='home'?'active':''} onClick={()=>setTab('home')}><School size={17}/>Home</button>
+      <button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>My Classes</button>
+      <button className={tab==='students'?'active':''} onClick={()=>setTab('students')}><Users size={17}/>Students</button>
+      <button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>
+      <button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>
     </div>
 
-    {message && <div className="status-message admin-status">{message}</div>}
+    {message&&<div className="status-message admin-status">{message}</div>}
 
-    {loading ? <div className="panel">Loading assigned classes…</div> :
-    tab === 'home' ? <>
+    {loading?<div className="panel">Loading assigned classes…</div>:
+    tab==='home'?<>
       <div className="dashboard-hero">
-        <span className="eyebrow">Teacher Attendance</span>
-        <h1>Attendance that stays connected to parents.</h1>
-        <p>Open an assigned class, choose Present or Absent for each student, and save. The same saved record is visible to the linked parent.</p>
+        <span className="eyebrow">Teacher Portal</span>
+        <h1>Daily class updates in one place.</h1>
+        <p>Manage attendance and a simple daily homework board for every class assigned to you.</p>
       </div>
       <div className="feature-grid">
-        <button className="feature-card" onClick={() => setTab('classes')}>
-          <span className="feature-icon"><BookOpen size={21}/></span>
-          <span><strong>{classes.length} assigned classes</strong><small>Classes assigned by the institute</small></span><span className="arrow">→</span>
-        </button>
-        <button className="feature-card" onClick={() => setTab('attendance')}>
-          <span className="feature-icon"><ClipboardCheck size={21}/></span>
-          <span><strong>Mark attendance</strong><small>Present or Absent, then save</small></span><span className="arrow">→</span>
-        </button>
+        <button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><School size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Classes assigned by the institute</small></span><span className="arrow">→</span></button>
+        <button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>
+        <button className="feature-card" onClick={()=>setTab('attendance')}><span className="feature-icon"><ClipboardCheck size={21}/></span><span><strong>Attendance</strong><small>Present or Absent, then save</small></span><span className="arrow">→</span></button>
       </div>
-    </> :
-    tab === 'classes' ? <div className="panel">
+    </>:
+    tab==='classes'?<div className="panel">
       <div className="panel-title"><div><h2>My Classes</h2><p>Only classes assigned to your logged-in Teacher account appear here.</p></div></div>
       <div className="feature-grid">
-        {classes.map(c => <button key={c.class_id} className="feature-card" onClick={() => void openClass(c.class_id)}>
+        {classes.map(c=><button key={c.class_id} className="feature-card" onClick={()=>void openClass(c.class_id)}>
           <span className="feature-icon"><School size={21}/></span>
-          <span>
-            <strong>{c.name}{c.section ? ` — Section ${c.section}` : ''}</strong>
-            <small>{c.student_count} student{c.student_count === 1 ? '' : 's'} · {c.academic_year || 'Academic year'}</small>
-          </span>
+          <span><strong>{c.name}{c.section?` — Section ${c.section}`:''}</strong><small>{c.student_count} student{c.student_count===1?'':'s'} · {c.academic_year||'Academic year'}</small></span>
           <span className="arrow">→</span>
         </button>)}
-        {!classes.length && <p>No classes have been assigned to this Teacher account yet.</p>}
       </div>
-    </div> :
-    tab === 'students' ? <div className="panel">
+    </div>:
+    tab==='students'?<div className="panel">
       <div className="panel-title"><div><h2>Students</h2><p>Students enrolled in the classes assigned to you.</p></div></div>
       <div className="cards-list">
-        {allStudents.map(student => <div className="person-row" key={student.child_id}>
-          <div>
-            <strong>{student.first_name} {student.last_name}</strong>
-            <small>{student.grade_or_program || 'Class not set'}{student.section ? ` · Section ${student.section}` : ''}</small>
-          </div>
-          <span className="badge active">Student</span>
-        </div>)}
-        {!allStudents.length && <p>Open My Classes first to load class rosters.</p>}
+        {allStudents.map(student=><div className="person-row" key={student.child_id}><div><strong>{student.first_name} {student.last_name}</strong><small>{student.grade_or_program||'Class not set'}{student.section?` · Section ${student.section}`:''}</small></div><span className="badge active">Student</span></div>)}
+        {!allStudents.length&&<p>Open My Classes first to load class rosters.</p>}
       </div>
-    </div> :
+    </div>:
+    tab==='homework'?<div className="panel">
+      <div className="panel-title"><div><h2>Daily Homework</h2><p>Homework is posted once for the selected class and is visible to every linked parent whose child is enrolled in that class.</p></div></div>
+      <div className="attendance-toolbar">
+        <label>Class<select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)}>{classes.map(c=><option key={c.class_id} value={c.class_id}>{c.name}{c.section?` — ${c.section}`:''}</option>)}</select></label>
+        <label>Date<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
+      </div>
+      <div className="panel homework-compose">
+        <h3>Add homework for {currentClass?currentClass.name:'class'}</h3>
+        <div className="inline-form">
+          <input placeholder="Homework title e.g. Maths — Exercise 5" value={homeworkTitle} onChange={e=>setHomeworkTitle(e.target.value)}/>
+          <input placeholder="Instructions / pages / notes (optional)" value={homeworkDetails} onChange={e=>setHomeworkDetails(e.target.value)}/>
+          <button className="primary-button" disabled={saving||!homeworkTitle.trim()} onClick={()=>void addHomework()}><Plus size={16}/> Add Homework</button>
+        </div>
+      </div>
+      <div className="cards-list">
+        {homework.map(item=><div className="person-row" key={item.homework_id}>
+          <div><strong>{item.title}</strong><small>{item.details||'No extra instructions'} · {item.homework_date}</small></div>
+          <button className="mini-button danger" onClick={()=>void removeHomework(item.homework_id)}><Trash2 size={14}/> Remove</button>
+        </div>)}
+        {!homework.length&&<p className="helper">No homework posted for this class on this date.</p>}
+      </div>
+    </div>:
     <div className="panel">
       <div className="panel-title"><div><h2>Attendance</h2><p>Choose a class and date, mark Present or Absent, then save.</p></div></div>
-
       <div className="attendance-toolbar">
-        <label>Class
-          <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)}>
-            {classes.map(c => <option key={c.class_id} value={c.class_id}>{c.name}{c.section ? ` — ${c.section}` : ''}</option>)}
-          </select>
-        </label>
-        <label>Date
-          <input type="date" value={date} onChange={e => setDate(e.target.value)}/>
-        </label>
+        <label>Class<select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)}>{classes.map(c=><option key={c.class_id} value={c.class_id}>{c.name}{c.section?` — ${c.section}`:''}</option>)}</select></label>
+        <label>Date<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
         <button className="mini-button" onClick={markAllPresent}>Mark all present</button>
       </div>
-
-      {currentClass && <p className="helper"><strong>{currentClass.name}{currentClass.section ? ` — Section ${currentClass.section}` : ''}</strong></p>}
-
+      {currentClass&&<p className="helper"><strong>{currentClass.name}{currentClass.section?` — Section ${currentClass.section}`:''}</strong></p>}
       <div className="cards-list">
-        {roster.map(student => {
-          const status = attendance[student.child_id] || 'present'
-          return <div className="attendance-row" key={student.child_id}>
-            <div>
-              <strong>{student.first_name} {student.last_name}</strong>
-              <small>{student.grade_or_program}{student.section ? ` · Section ${student.section}` : ''}</small>
-            </div>
-            <div className="attendance-actions">
-              <button className={`attendance-pill ${status === 'present' ? 'selected' : ''}`} onClick={() => setAttendance(prev => ({ ...prev, [student.child_id]: 'present' }))}>Present</button>
-              <button className={`attendance-pill ${status === 'absent' ? 'selected' : ''}`} onClick={() => setAttendance(prev => ({ ...prev, [student.child_id]: 'absent' }))}>Absent</button>
-            </div>
+        {roster.map(student=>{const status=attendance[student.child_id]||'present';return <div className="attendance-row" key={student.child_id}>
+          <div><strong>{student.first_name} {student.last_name}</strong><small>{student.grade_or_program}{student.section?` · Section ${student.section}`:''}</small></div>
+          <div className="attendance-actions">
+            <button className={`attendance-pill ${status==='present'?'selected':''}`} onClick={()=>setAttendance(prev=>({...prev,[student.child_id]:'present'}))}>Present</button>
+            <button className={`attendance-pill ${status==='absent'?'selected':''}`} onClick={()=>setAttendance(prev=>({...prev,[student.child_id]:'absent'}))}>Absent</button>
           </div>
-        })}
-        {!roster.length && <p>No students are enrolled in this class yet.</p>}
+        </div>})}
+        {!roster.length&&<p>No students are enrolled in this class yet.</p>}
       </div>
-
-      <div className="attendance-save">
-        <button className="primary-button" disabled={!roster.length || saving} onClick={() => void saveAttendance()}>
-          <CheckCircle2 size={17}/> {saving ? 'Saving…' : 'Save Attendance'}
-        </button>
-      </div>
+      <div className="attendance-save"><button className="primary-button" disabled={!roster.length||saving} onClick={()=>void saveAttendance()}><CheckCircle2 size={17}/> {saving?'Saving…':'Save Attendance'}</button></div>
     </div>}
   </div>
 }

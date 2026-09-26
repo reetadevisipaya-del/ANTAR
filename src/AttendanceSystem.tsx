@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, CheckCircle2, ClipboardCheck, Plus, School, Trash2, Users } from 'lucide-react'
+import { BookOpen, CheckCircle2, ClipboardCheck, FileText, Plus, School, Trash2, Users } from 'lucide-react'
 import { supabase } from './supabase'
 
 type StaffClass = {
@@ -40,15 +40,21 @@ const label = (value?: string) =>
   value ? value.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''
 
 export function StaffAttendancePortal({ userId }: { userId: string }) {
-  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'homework' | 'attendance'>('home')
+  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'attendance'>('home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
   const [selectedClass, setSelectedClass] = useState('')
+  const [selectedStudent, setSelectedStudent] = useState('')
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10))
   const [attendance, setAttendance] = useState<Record<string, 'present' | 'absent'>>({})
   const [homework, setHomework] = useState<Array<{homework_id:string;title:string;details?:string;homework_date:string;due_at?:string}>>([])
   const [homeworkTitle, setHomeworkTitle] = useState('')
   const [homeworkDetails, setHomeworkDetails] = useState('')
+  const [reportSummary, setReportSummary] = useState('')
+  const [reportLearning, setReportLearning] = useState('')
+  const [reportActivity, setReportActivity] = useState('')
+  const [reportWellbeing, setReportWellbeing] = useState('')
+  const [reportParentNote, setReportParentNote] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
@@ -73,7 +79,11 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
     if(!classId) return
     const {data,error}=await supabase.rpc('staff_class_roster',{p_class_id:classId})
     if(error){setMessage(error.message);return}
-    setRosters(prev=>({...prev,[classId]:(data||[]) as Student[]}))
+    const next=(data||[]) as Student[]
+    setRosters(prev=>({...prev,[classId]:next}))
+    if(classId===selectedClass){
+      setSelectedStudent(current=>current&&next.some(s=>s.child_id===current)?current:(next[0]?.child_id||''))
+    }
   }
 
   async function loadAttendance(classId:string, attendanceDate:string) {
@@ -97,17 +107,48 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
     setHomework((data||[]) as typeof homework)
   }
 
+  function clearReport(){
+    setReportSummary('')
+    setReportLearning('')
+    setReportActivity('')
+    setReportWellbeing('')
+    setReportParentNote('')
+  }
+
+  async function loadReport(classId:string, childId:string, reportDate:string){
+    if(!classId||!childId){clearReport();return}
+    const {data,error}=await supabase.rpc('staff_child_daily_report',{
+      p_class_id:classId,
+      p_child_id:childId,
+      p_date:reportDate,
+    })
+    if(error){setMessage(error.message);return}
+    const row=(data||[])[0] as any
+    if(!row){clearReport();return}
+    setReportSummary(row.summary||'')
+    setReportLearning(row.learning_notes||'')
+    setReportActivity(row.activity_notes||'')
+    setReportWellbeing(row.wellbeing_notes||'')
+    setReportParentNote(row.parent_note||'')
+  }
+
   useEffect(()=>{void loadClasses()},[userId])
 
   useEffect(()=>{
     if(!selectedClass) return
     if(!rosters[selectedClass]){void loadRoster(selectedClass);return}
+    const roster=rosters[selectedClass]||[]
+    setSelectedStudent(current=>current&&roster.some(s=>s.child_id===current)?current:(roster[0]?.child_id||''))
     void loadAttendance(selectedClass,date)
   },[selectedClass,date,rosters])
 
   useEffect(()=>{
     if(selectedClass && tab==='homework') void loadHomework(selectedClass,date)
   },[selectedClass,date,tab])
+
+  useEffect(()=>{
+    if(tab==='report' && selectedClass && selectedStudent) void loadReport(selectedClass,selectedStudent,date)
+  },[tab,selectedClass,selectedStudent,date])
 
   async function openClass(classId:string){
     setSelectedClass(classId)
@@ -125,6 +166,26 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
     if(error){setMessage(error.message);setSaving(false);return}
     await loadAttendance(selectedClass,date)
     setMessage('Attendance saved. Parent Portal will show the same record.')
+    setSaving(false)
+  }
+
+  async function saveReport(){
+    if(!selectedClass||!selectedStudent){setMessage('Choose a class and student first.');return}
+    setSaving(true)
+    setMessage('Saving daily report…')
+    const {error}=await supabase.rpc('staff_save_child_daily_report',{
+      p_class_id:selectedClass,
+      p_child_id:selectedStudent,
+      p_date:date,
+      p_summary:reportSummary.trim()||'Daily update',
+      p_learning_notes:reportLearning.trim()||null,
+      p_activity_notes:reportActivity.trim()||null,
+      p_wellbeing_notes:reportWellbeing.trim()||null,
+      p_parent_note:reportParentNote.trim()||null,
+    })
+    if(error){setMessage(error.message);setSaving(false);return}
+    await loadReport(selectedClass,selectedStudent,date)
+    setMessage('Daily report saved. The linked parent can see it now.')
     setSaving(false)
   }
 
@@ -173,12 +234,14 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
 
   const currentClass=classes.find(c=>c.class_id===selectedClass)
   const roster=rosters[selectedClass]||[]
+  const currentStudent=roster.find(s=>s.child_id===selectedStudent)
 
   return <div className="staff-portal">
     <div className="staff-nav">
       <button className={tab==='home'?'active':''} onClick={()=>setTab('home')}><School size={17}/>Home</button>
       <button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>My Classes</button>
       <button className={tab==='students'?'active':''} onClick={()=>setTab('students')}><Users size={17}/>Students</button>
+      <button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>
       <button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>
       <button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>
     </div>
@@ -189,11 +252,12 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
     tab==='home'?<>
       <div className="dashboard-hero">
         <span className="eyebrow">Teacher Portal</span>
-        <h1>Daily class updates in one place.</h1>
-        <p>Manage attendance and a simple daily homework board for every class assigned to you.</p>
+        <h1>Daily school updates in one place.</h1>
+        <p>Manage attendance, individual daily reports, and a class-wide homework board.</p>
       </div>
       <div className="feature-grid">
         <button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><School size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Classes assigned by the institute</small></span><span className="arrow">→</span></button>
+        <button className="feature-card" onClick={()=>setTab('report')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Daily Report</strong><small>Write a daily update for one student</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('attendance')}><span className="feature-icon"><ClipboardCheck size={21}/></span><span><strong>Attendance</strong><small>Present or Absent, then save</small></span><span className="arrow">→</span></button>
       </div>
@@ -214,6 +278,23 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
         {allStudents.map(student=><div className="person-row" key={student.child_id}><div><strong>{student.first_name} {student.last_name}</strong><small>{student.grade_or_program||'Class not set'}{student.section?` · Section ${student.section}`:''}</small></div><span className="badge active">Student</span></div>)}
         {!allStudents.length&&<p>Open My Classes first to load class rosters.</p>}
       </div>
+    </div>:
+    tab==='report'?<div className="panel">
+      <div className="panel-title"><div><h2>Daily School Report</h2><p>Select a class and student. One report is saved per student per day and can be updated during the day.</p></div></div>
+      <div className="attendance-toolbar">
+        <label>Class<select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)}>{classes.map(c=><option key={c.class_id} value={c.class_id}>{c.name}{c.section?` — ${c.section}`:''}</option>)}</select></label>
+        <label>Student<select value={selectedStudent} onChange={e=>setSelectedStudent(e.target.value)}>{roster.map(s=><option key={s.child_id} value={s.child_id}>{s.first_name} {s.last_name}</option>)}</select></label>
+        <label>Date<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
+      </div>
+      {currentStudent&&<p className="helper"><strong>{currentStudent.first_name} {currentStudent.last_name}</strong> · {currentStudent.grade_or_program}{currentStudent.section?` · Section ${currentStudent.section}`:''}</p>}
+      <div className="report-form">
+        <label>Daily summary<textarea placeholder="Short overall update for the day" value={reportSummary} onChange={e=>setReportSummary(e.target.value)}/></label>
+        <label>Learning update<textarea placeholder="What was learned or worked on today?" value={reportLearning} onChange={e=>setReportLearning(e.target.value)}/></label>
+        <label>Activities<textarea placeholder="Activities, participation or classroom work" value={reportActivity} onChange={e=>setReportActivity(e.target.value)}/></label>
+        <label>Wellbeing<textarea placeholder="Optional wellbeing / mood note" value={reportWellbeing} onChange={e=>setReportWellbeing(e.target.value)}/></label>
+        <label>Note for parent<textarea placeholder="Optional note for home" value={reportParentNote} onChange={e=>setReportParentNote(e.target.value)}/></label>
+      </div>
+      <div className="attendance-save"><button className="primary-button" disabled={!selectedStudent||saving} onClick={()=>void saveReport()}><CheckCircle2 size={17}/> {saving?'Saving…':'Save Daily Report'}</button></div>
     </div>:
     tab==='homework'?<div className="panel">
       <div className="panel-title"><div><h2>Daily Homework</h2><p>Homework is posted once for the selected class and is visible to every linked parent whose child is enrolled in that class.</p></div></div>

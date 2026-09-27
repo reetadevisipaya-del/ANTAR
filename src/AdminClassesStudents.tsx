@@ -44,7 +44,7 @@ type AssignmentRow={
   active?:boolean|null
 }
 
-const label=(value?:string)=>value?value.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):''
+const label=(value?:string|null)=>value?value.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):''
 
 export default function AdminClassesStudents(){
   const [classes,setClasses]=useState<ClassRow[]>([])

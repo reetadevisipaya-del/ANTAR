@@ -470,6 +470,10 @@ function TherapistRosterPanel(){
   </div>
 }
 
+export function TherapistStudents(){
+  return <TherapistRosterPanel/>
+}
+
 export function StaffCare(){
   return <div className="care-workspace">
     <TherapistRosterPanel/>

@@ -3,7 +3,7 @@ import { BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, FileText, Plus, S
 import { supabase } from './supabase'
 import { AdminSchedule, StaffSchedule } from './ScheduleSystem'
 import { StaffDocuments } from './DocumentSystem'
-import { StaffCare } from './CareSystem'
+import { StaffCare, TherapistStudents } from './CareSystem'
 
 type StaffClass = {
   class_id: string
@@ -42,7 +42,8 @@ type AdminClassRow = {
 const label = (value?: string) =>
   value ? value.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''
 
-export function StaffAttendancePortal({ userId }: { userId: string }) {
+export function StaffAttendancePortal({ userId, role }: { userId: string; role?: string }) {
+  const isTherapist=role==='therapist'
   const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
@@ -242,14 +243,14 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
   return <div className="staff-portal">
     <div className="staff-nav">
       <button className={tab==='home'?'active':''} onClick={()=>setTab('home')}><School size={17}/>Home</button>
-      <button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>My Classes</button>
-      <button className={tab==='students'?'active':''} onClick={()=>setTab('students')}><Users size={17}/>Students</button>
-      <button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>
-      <button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>
+      {!isTherapist&&<button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>My Classes</button>}
+      <button className={tab==='students'?'active':''} onClick={()=>setTab('students')}><Users size={17}/>{isTherapist?'My Students':'Students'}</button>
+      {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>}
+      {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>}
       <button className={tab==='documents'?'active':''} onClick={()=>setTab('documents')}><FileText size={17}/>Documents</button>
       <button className={tab==='care'?'active':''} onClick={()=>setTab('care')}><CalendarDays size={17}/>Appointments & Therapy</button>
-      <button className={tab==='schedule'?'active':''} onClick={()=>setTab('schedule')}><CalendarDays size={17}/>Schedule</button>
-      <button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>
+      {!isTherapist&&<button className={tab==='schedule'?'active':''} onClick={()=>setTab('schedule')}><CalendarDays size={17}/>Schedule</button>}
+      {!isTherapist&&<button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>}
     </div>
 
     {message&&<div className="status-message admin-status">{message}</div>}
@@ -257,18 +258,18 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
     {loading?<div className="panel">Loading assigned classes…</div>:
     tab==='home'?<>
       <div className="dashboard-hero">
-        <span className="eyebrow">Teacher Portal</span>
-        <h1>Daily school updates in one place.</h1>
-        <p>Manage attendance, individual daily reports, and a class-wide homework board.</p>
+        <span className="eyebrow">{isTherapist?'Therapist Portal':'Teacher Portal'}</span>
+        <h1>{isTherapist?'Your therapy caseload and care schedule.':'Daily school updates in one place.'}</h1>
+        <p>{isTherapist?'View your assigned students by class, schedule appointments, record therapy sessions and share parent-facing updates.':'Manage attendance, individual daily reports, and a class-wide homework board.'}</p>
       </div>
       <div className="feature-grid">
-        <button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><School size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Classes assigned by the institute</small></span><span className="arrow">→</span></button>
-        <button className="feature-card" onClick={()=>setTab('report')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Daily Report</strong><small>Write a daily update for one student</small></span><span className="arrow">→</span></button>
-        <button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>
+        {isTherapist?<button className="feature-card" onClick={()=>setTab('students')}><span className="feature-icon"><Users size={21}/></span><span><strong>My Students</strong><small>Assigned therapy students with class details</small></span><span className="arrow">→</span></button>:<button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><School size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Classes assigned by the institute</small></span><span className="arrow">→</span></button>}
+        {!isTherapist&&<button className="feature-card" onClick={()=>setTab('report')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Daily Report</strong><small>Write a daily update for one student</small></span><span className="arrow">→</span></button>}
+        {!isTherapist&&<button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>}
         <button className="feature-card" onClick={()=>setTab('documents')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Documents</strong><small>Upload secure student records</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('care')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Appointments & Therapy</strong><small>Manage child care schedules and sessions</small></span><span className="arrow">→</span></button>
-        <button className="feature-card" onClick={()=>setTab('schedule')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Schedule</strong><small>Add class timetable and events</small></span><span className="arrow">→</span></button>
-        <button className="feature-card" onClick={()=>setTab('attendance')}><span className="feature-icon"><ClipboardCheck size={21}/></span><span><strong>Attendance</strong><small>Present or Absent, then save</small></span><span className="arrow">→</span></button>
+        {!isTherapist&&<button className="feature-card" onClick={()=>setTab('schedule')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Schedule</strong><small>Add class timetable and events</small></span><span className="arrow">→</span></button>}
+        {!isTherapist&&<button className="feature-card" onClick={()=>setTab('attendance')}><span className="feature-icon"><ClipboardCheck size={21}/></span><span><strong>Attendance</strong><small>Present or Absent, then save</small></span><span className="arrow">→</span></button>}
       </div>
     </>:
     tab==='classes'?<div className="panel">
@@ -281,13 +282,13 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
         </button>)}
       </div>
     </div>:
-    tab==='students'?<div className="panel">
+    tab==='students'?(isTherapist?<TherapistStudents/>:<div className="panel">
       <div className="panel-title"><div><h2>Students</h2><p>Students enrolled in the classes assigned to you.</p></div></div>
       <div className="cards-list">
         {allStudents.map(student=><div className="person-row" key={student.child_id}><div><strong>{student.first_name} {student.last_name}</strong><small>{student.grade_or_program||'Class not set'}{student.section?` · Section ${student.section}`:''}</small></div><span className="badge active">Student</span></div>)}
         {!allStudents.length&&<p>Open My Classes first to load class rosters.</p>}
       </div>
-    </div>:
+    </div>):
     tab==='report'?<div className="panel">
       <div className="panel-title"><div><h2>Daily School Report</h2><p>Select a class and student. One report is saved per student per day and can be updated during the day.</p></div></div>
       <div className="attendance-toolbar">

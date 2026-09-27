@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, MapPin, Plus, Trash2 } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Clock3, MapPin, Trash2 } from 'lucide-react'
 import { supabase } from './supabase'
 
 type ClassOption = {
@@ -21,14 +21,34 @@ type ScheduleEvent = {
   location?: string
 }
 
-const eventTypes = [
+type SlotDraft = {
+  event_id?: string
+  type: string
+  title: string
+  location: string
+  description: string
+}
+
+const slotTypes = [
   ['class','Class'],
   ['therapy','Therapy'],
   ['activity','Activity'],
-  ['meeting','Meeting'],
   ['assessment','Assessment'],
+  ['meeting','Meeting'],
+  ['lunch','Lunch'],
+  ['break','Break'],
   ['other','Other'],
 ] as const
+
+const hours = [8,9,10,11,12,13,14,15]
+const pad = (n:number)=>String(n).padStart(2,'0')
+const slotKey = (hour:number)=>`${pad(hour)}:00`
+const slotLabel = (hour:number)=>{
+  const from=new Date(2000,0,1,hour,0)
+  const to=new Date(2000,0,1,hour+1,0)
+  const fmt=(d:Date)=>d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})
+  return `${fmt(from)} – ${fmt(to)}`
+}
 
 function dayRange(date:string){
   const from=new Date(`${date}T00:00:00`)
@@ -37,21 +57,31 @@ function dayRange(date:string){
   return {from:from.toISOString(),to:to.toISOString()}
 }
 
-function formatTime(value:string){
-  return new Date(value).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})
+function className(c:ClassOption){
+  return c.name||c.class_name||'Class'
 }
 
-function ScheduleManager({classes,heading,subheading}:{classes:ClassOption[];heading:string;subheading:string}){
+function eventAtHour(events:ScheduleEvent[],hour:number){
+  return events.find(e=>new Date(e.starts_at).getHours()===hour)
+}
+
+function defaultDraft(event?:ScheduleEvent):SlotDraft{
+  if(!event) return {type:'class',title:'',location:'',description:''}
+  return {
+    event_id:event.event_id,
+    type:event.event_type,
+    title:event.title||'',
+    location:event.location||'',
+    description:event.description||'',
+  }
+}
+
+function TimetableManager({classes,heading,subheading}:{classes:ClassOption[];heading:string;subheading:string}){
   const [selectedClass,setSelectedClass]=useState('')
   const [date,setDate]=useState(new Date().toISOString().slice(0,10))
-  const [title,setTitle]=useState('')
-  const [eventType,setEventType]=useState('class')
-  const [startTime,setStartTime]=useState('09:00')
-  const [endTime,setEndTime]=useState('10:00')
-  const [location,setLocation]=useState('')
-  const [description,setDescription]=useState('')
   const [events,setEvents]=useState<ScheduleEvent[]>([])
-  const [saving,setSaving]=useState(false)
+  const [drafts,setDrafts]=useState<Record<string,SlotDraft>>({})
+  const [savingSlot,setSavingSlot]=useState('')
   const [message,setMessage]=useState('')
 
   useEffect(()=>{
@@ -59,7 +89,8 @@ function ScheduleManager({classes,heading,subheading}:{classes:ClassOption[];hea
   },[classes])
 
   async function load(){
-    if(!selectedClass){setEvents([]);return}
+    if(!selectedClass){setEvents([]);setDrafts({});return}
+    setMessage('')
     const range=dayRange(date)
     const {data,error}=await supabase.rpc('class_schedule_for_staff',{
       p_class_id:selectedClass,
@@ -67,49 +98,63 @@ function ScheduleManager({classes,heading,subheading}:{classes:ClassOption[];hea
       p_to:range.to,
     })
     if(error){setMessage(error.message);setEvents([]);return}
-    setEvents((data||[]) as ScheduleEvent[])
+
+    const next=(data||[]) as ScheduleEvent[]
+    setEvents(next)
+    const nextDrafts:Record<string,SlotDraft>={}
+    hours.forEach(hour=>{
+      const key=slotKey(hour)
+      nextDrafts[key]=defaultDraft(eventAtHour(next,hour))
+    })
+    setDrafts(nextDrafts)
   }
 
   useEffect(()=>{void load()},[selectedClass,date])
 
-  async function save(){
+  function updateDraft(key:string,patch:Partial<SlotDraft>){
+    setDrafts(prev=>({...prev,[key]:{...(prev[key]||defaultDraft()),...patch}}))
+  }
+
+  async function saveSlot(hour:number){
     if(!selectedClass){setMessage('Choose a class first.');return}
-    if(!title.trim()){setMessage('Enter an event title.');return}
-    const starts=new Date(`${date}T${startTime}:00`)
-    const ends=new Date(`${date}T${endTime}:00`)
-    if(ends<=starts){setMessage('End time must be after start time.');return}
+    const key=slotKey(hour)
+    const draft=drafts[key]||defaultDraft()
 
-    setSaving(true)
-    setMessage('Saving schedule event…')
-    const {error}=await supabase.rpc('save_class_schedule_event',{
+    if(!draft.title.trim() && !['lunch','break'].includes(draft.type)){
+      setMessage('Enter the subject or activity name for this slot.')
+      return
+    }
+
+    setSavingSlot(key)
+    setMessage('Saving timetable slot…')
+    const starts=new Date(`${date}T${key}:00`)
+    const {error}=await supabase.rpc('upsert_class_timetable_slot',{
       p_class_id:selectedClass,
-      p_title:title.trim(),
-      p_description:description.trim()||null,
-      p_event_type:eventType,
       p_starts_at:starts.toISOString(),
-      p_ends_at:ends.toISOString(),
-      p_location:location.trim()||null,
+      p_slot_type:draft.type,
+      p_title:draft.title.trim()||null,
+      p_location:draft.location.trim()||null,
+      p_description:draft.description.trim()||null,
     })
-    if(error){setMessage(error.message);setSaving(false);return}
 
-    setTitle('')
-    setDescription('')
-    setLocation('')
+    if(error){setMessage(error.message);setSavingSlot('');return}
     await load()
-    setMessage('Schedule event saved. Linked parents can see it now.')
-    setSaving(false)
+    setMessage(`${slotLabel(hour)} updated. Parents in this class can see the change.`)
+    setSavingSlot('')
   }
 
-  async function remove(eventId:string){
-    const {error}=await supabase.rpc('remove_class_schedule_event',{p_event_id:eventId})
-    if(error){setMessage(error.message);return}
+  async function clearSlot(hour:number){
+    const event=eventAtHour(events,hour)
+    if(!event) return
+    setSavingSlot(slotKey(hour))
+    const {error}=await supabase.rpc('remove_class_schedule_event',{p_event_id:event.event_id})
+    if(error){setMessage(error.message);setSavingSlot('');return}
     await load()
-    setMessage('Schedule event removed.')
+    setMessage(`${slotLabel(hour)} cleared.`)
+    setSavingSlot('')
   }
 
-  const className=(c:ClassOption)=>c.name||c.class_name||'Class'
-
-  return <div className="panel">
+  return <div className="panel timetable-panel">
     <div className="panel-title">
       <div>
         <h2>{heading}</h2>
@@ -119,53 +164,64 @@ function ScheduleManager({classes,heading,subheading}:{classes:ClassOption[];hea
 
     {message&&<div className="status-message admin-status">{message}</div>}
 
-    <div className="attendance-toolbar">
+    <div className="attendance-toolbar timetable-toolbar">
       <label>Class
         <select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)}>
-          {classes.map(c=><option key={c.class_id} value={c.class_id}>{className(c)}{c.section?` — ${c.section}`:''}</option>)}
+          {classes.map(c=><option key={c.class_id} value={c.class_id}>{className(c)}{c.section?` — Section ${c.section}`:''}</option>)}
         </select>
       </label>
-      <label>Date<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
-    </div>
-
-    <div className="report-form">
-      <label>Event title<input placeholder="e.g. Maths, Speech Therapy, Assessment" value={title} onChange={e=>setTitle(e.target.value)}/></label>
-      <label>Event type
-        <select value={eventType} onChange={e=>setEventType(e.target.value)}>
-          {eventTypes.map(([value,label])=><option key={value} value={value}>{label}</option>)}
-        </select>
+      <label>Date
+        <input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
       </label>
-      <label>Start time<input type="time" value={startTime} onChange={e=>setStartTime(e.target.value)}/></label>
-      <label>End time<input type="time" value={endTime} onChange={e=>setEndTime(e.target.value)}/></label>
-      <label>Location<input placeholder="e.g. Classroom 5A / Therapy Room" value={location} onChange={e=>setLocation(e.target.value)}/></label>
-      <label>Notes<textarea placeholder="Optional details for families" value={description} onChange={e=>setDescription(e.target.value)}/></label>
     </div>
 
-    <div className="attendance-save">
-      <button className="primary-button" disabled={saving||!selectedClass||!title.trim()} onClick={()=>void save()}>
-        <Plus size={16}/> {saving?'Saving…':'Save Schedule Event'}
-      </button>
-    </div>
+    <div className="timetable">
+      <div className="timetable-head timetable-row">
+        <span>Time</span><span>Type</span><span>Subject / Activity</span><span>Room</span><span>Notes</span><span>Action</span>
+      </div>
 
-    <div className="cards-list">
-      {events.map(event=><div className="person-row" key={event.event_id}>
-        <div>
-          <strong><CalendarDays size={15}/> {event.title}</strong>
-          <small>{formatTime(event.starts_at)}–{formatTime(event.ends_at)} · {event.event_type.replaceAll('_',' ')}{event.location?` · ${event.location}`:''}</small>
-          {event.description&&<p>{event.description}</p>}
+      {hours.map(hour=>{
+        const key=slotKey(hour)
+        const draft=drafts[key]||defaultDraft()
+        const existing=eventAtHour(events,hour)
+        return <div className={`timetable-row ${existing?'filled':''}`} key={key}>
+          <div className="time-cell"><Clock3 size={15}/><strong>{slotLabel(hour)}</strong></div>
+          <select value={draft.type} onChange={e=>{
+            const type=e.target.value
+            updateDraft(key,{
+              type,
+              title:type==='lunch'?'Lunch':type==='break'?'Break':draft.title,
+            })
+          }}>
+            {slotTypes.map(([value,label])=><option key={value} value={value}>{label}</option>)}
+          </select>
+          <input
+            value={draft.title}
+            placeholder={draft.type==='class'?'e.g. Maths / English':draft.type==='lunch'?'Lunch':draft.type==='break'?'Break':'e.g. Speech Therapy'}
+            onChange={e=>updateDraft(key,{title:e.target.value})}
+            disabled={draft.type==='lunch'||draft.type==='break'}
+          />
+          <input value={draft.location} placeholder="Room / location" onChange={e=>updateDraft(key,{location:e.target.value})}/>
+          <input value={draft.description} placeholder="Optional note" onChange={e=>updateDraft(key,{description:e.target.value})}/>
+          <div className="slot-actions">
+            <button className="mini-button slot-save" disabled={savingSlot===key} onClick={()=>void saveSlot(hour)}>
+              <CheckCircle2 size={14}/> {existing?'Update':'Save'}
+            </button>
+            {existing&&<button className="mini-button danger" disabled={savingSlot===key} onClick={()=>void clearSlot(hour)}><Trash2 size={14}/> Clear</button>}
+          </div>
         </div>
-        <button className="mini-button danger" onClick={()=>void remove(event.event_id)}><Trash2 size={14}/> Remove</button>
-      </div>)}
-      {!events.length&&<p className="helper">No schedule events for this class on this date.</p>}
+      })}
     </div>
+
+    <p className="helper timetable-help">Demo timetable uses fixed one-hour slots from 8:00 AM to 4:00 PM. Saving or updating a slot instantly changes the timetable visible to linked parents.</p>
   </div>
 }
 
 export function StaffSchedule({classes}:{classes:ClassOption[]}){
-  return <ScheduleManager
+  return <TimetableManager
     classes={classes}
-    heading="Schedule / Timetable"
-    subheading="Choose one of your assigned classes and add an event. Every enrolled child’s linked parent will see it."
+    heading="Class Timetable"
+    subheading="Choose one of your assigned classes, then fill the one-hour school-day slots. Use Class for subjects such as Maths, or choose Lunch, Therapy, Activity, Assessment, Meeting or Break."
   />
 }
 
@@ -192,13 +248,13 @@ export function AdminSchedule(){
     })()
   },[])
 
-  if(loading)return <div className="panel">Loading schedule classes…</div>
+  if(loading)return <div className="panel">Loading timetable classes…</div>
   if(error)return <div className="status-message">{error}</div>
 
-  return <ScheduleManager
+  return <TimetableManager
     classes={classes}
-    heading="Class Schedule"
-    subheading="Institute Admin can add schedule events for any class. Linked parents see only events for their child’s enrolled class."
+    heading="Institute Timetable"
+    subheading="Choose any class and build its day using one-hour time slots. Teacher and Admin updates use the same class timetable."
   />
 }
 
@@ -224,26 +280,40 @@ export function ParentSchedule({childId}:{childId:string}){
 
   useEffect(()=>{void load()},[childId,date])
 
-  const ordered=useMemo(()=>[...events].sort((a,b)=>new Date(a.starts_at).getTime()-new Date(b.starts_at).getTime()),[events])
+  const firstClass=events[0]
+  const displayClass=firstClass?`${firstClass.class_name}${firstClass.section?` — Section ${firstClass.section}`:''}`:'Your child’s class'
+
+  const slotEvents=useMemo(()=>{
+    const map=new Map<number,ScheduleEvent&{class_name:string;section?:string}>()
+    events.forEach(e=>map.set(new Date(e.starts_at).getHours(),e))
+    return map
+  },[events])
 
   return <>
     <div className="section-head">
-      <h1>Schedule</h1>
-      <p>Class timetable, therapy, activities, meetings and assessments shared by your child’s institution.</p>
+      <h1>Timetable</h1>
+      <p>{displayClass} · Daily one-hour schedule shared by the institute.</p>
     </div>
-    <div className="panel">
-      <div className="attendance-toolbar">
+    <div className="panel timetable-panel">
+      <div className="attendance-toolbar timetable-toolbar">
         <label>Date<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label>
       </div>
+
       {error&&<div className="status-message">{error}</div>}
-      {loading?<p>Loading schedule…</p>:<div className="cards-list">
-        {ordered.map(event=><div className="record-card" key={event.event_id}>
-          <strong><CalendarDays size={15}/> {event.title}</strong>
-          <p>{formatTime(event.starts_at)}–{formatTime(event.ends_at)} · {event.class_name}{event.section?` Section ${event.section}`:''}</p>
-          {event.location&&<small><MapPin size={13}/> {event.location}</small>}
-          {event.description&&<p>{event.description}</p>}
-        </div>)}
-        {!ordered.length&&<p>No schedule events for this date.</p>}
+
+      {loading?<p>Loading timetable…</p>:<div className="student-timetable">
+        {hours.map(hour=>{
+          const event=slotEvents.get(hour)
+          return <div className={`student-slot ${event?'filled':'empty'}`} key={hour}>
+            <div className="student-slot-time"><Clock3 size={16}/><strong>{slotLabel(hour)}</strong></div>
+            {event?<div className="student-slot-event">
+              <span className={`timetable-type type-${event.event_type}`}>{event.event_type.replaceAll('_',' ')}</span>
+              <strong>{event.title}</strong>
+              {event.location&&<small><MapPin size={13}/> {event.location}</small>}
+              {event.description&&<p>{event.description}</p>}
+            </div>:<div className="student-slot-empty">No event added</div>}
+          </div>
+        })}
       </div>}
     </div>
   </>

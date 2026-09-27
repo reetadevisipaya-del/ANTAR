@@ -298,12 +298,190 @@ function CareManager({mode}:{mode:'staff'|'admin'}){
   </div>
 }
 
+
+type TherapistDirectoryRow = {
+  therapist_id:string
+  therapist_code:string
+  full_name?:string
+  email:string
+  assigned_students:number
+}
+
+type TherapistAssignmentRow = {
+  assignment_id:string
+  therapist_id:string
+  therapist_code:string
+  therapist_name?:string
+  therapist_email:string
+  child_id:string
+  child_name:string
+  grade_or_program?:string
+  section?:string
+}
+
+type TherapistStudentRow = {
+  child_id:string
+  first_name:string
+  last_name?:string
+  grade_or_program?:string
+  section?:string
+  student_identifier?:string
+  therapist_code?:string
+}
+
+function TherapistAssignmentsPanel(){
+  const [therapists,setTherapists]=useState<TherapistDirectoryRow[]>([])
+  const [children,setChildren]=useState<ChildOption[]>([])
+  const [assignments,setAssignments]=useState<TherapistAssignmentRow[]>([])
+  const [therapistId,setTherapistId]=useState('')
+  const [childId,setChildId]=useState('')
+  const [loading,setLoading]=useState(true)
+  const [message,setMessage]=useState('')
+
+  async function load(){
+    setLoading(true)
+    setMessage('')
+    const [t,c,a]=await Promise.all([
+      supabase.rpc('admin_therapist_directory'),
+      supabase.rpc('admin_document_children'),
+      supabase.rpc('admin_therapist_assignments'),
+    ])
+    if(t.error||c.error||a.error){
+      setMessage(t.error?.message||c.error?.message||a.error?.message||'Unable to load therapist assignments.')
+      setLoading(false)
+      return
+    }
+    const nextTherapists=((t.data||[]) as TherapistDirectoryRow[]).map(x=>({...x,assigned_students:Number(x.assigned_students||0)}))
+    const nextChildren=(c.data||[]) as ChildOption[]
+    setTherapists(nextTherapists)
+    setChildren(nextChildren)
+    setAssignments((a.data||[]) as TherapistAssignmentRow[])
+    setTherapistId(current=>current&&nextTherapists.some(x=>x.therapist_id===current)?current:(nextTherapists[0]?.therapist_id||''))
+    setChildId(current=>current&&nextChildren.some(x=>x.child_id===current)?current:(nextChildren[0]?.child_id||''))
+    setLoading(false)
+  }
+
+  useEffect(()=>{void load()},[])
+
+  async function assign(){
+    if(!therapistId||!childId){setMessage('Choose a therapist and student first.');return}
+    setMessage('Assigning therapist…')
+    const {error}=await supabase.rpc('admin_assign_therapist_to_child',{
+      p_therapist_id:therapistId,
+      p_child_id:childId,
+    })
+    if(error){setMessage(error.message);return}
+    setMessage('Therapist assigned successfully.')
+    await load()
+  }
+
+  async function unassign(id:string){
+    const {error}=await supabase.rpc('admin_unassign_therapist',{p_assignment_id:id})
+    if(error){setMessage(error.message);return}
+    setMessage('Therapist assignment removed.')
+    await load()
+  }
+
+  if(loading)return <div className="panel">Loading therapist IDs and assignments…</div>
+
+  return <div className="panel therapist-assignment-panel">
+    <div className="panel-title"><div>
+      <h2>Therapist IDs & Student Assignment</h2>
+      <p>Each active therapist has a separate institute Therapist ID. Assign a therapist to a student before therapy sessions can be created.</p>
+    </div></div>
+
+    {message&&<div className="status-message admin-status">{message}</div>}
+
+    <div className="therapist-directory">
+      {therapists.map(t=><div className="therapist-id-card" key={t.therapist_id}>
+        <span className="therapist-code">{t.therapist_code||'THERAPIST'}</span>
+        <div>
+          <strong>{t.full_name||t.email}</strong>
+          <small>{t.email} · {t.assigned_students} assigned student{t.assigned_students===1?'':'s'}</small>
+        </div>
+      </div>)}
+      {!therapists.length&&<p>No active therapist accounts found. Set a staff member’s role to Therapist under People & Access first.</p>}
+    </div>
+
+    {!!therapists.length&&!!children.length&&<div className="therapist-assign-form">
+      <label>Therapist
+        <select value={therapistId} onChange={e=>setTherapistId(e.target.value)}>
+          {therapists.map(t=><option key={t.therapist_id} value={t.therapist_id}>{t.therapist_code} — {t.full_name||t.email}</option>)}
+        </select>
+      </label>
+      <label>Student
+        <select value={childId} onChange={e=>setChildId(e.target.value)}>
+          {children.map(ch=><option key={ch.child_id} value={ch.child_id}>{ch.first_name} {ch.last_name}{ch.grade_or_program?' — '+ch.grade_or_program:''}{ch.section?' '+ch.section:''}</option>)}
+        </select>
+      </label>
+      <button className="primary-button" onClick={()=>void assign()}>Assign Therapist</button>
+    </div>}
+
+    <h3>Active therapist assignments</h3>
+    <div className="cards-list">
+      {assignments.map(a=><div className="assign-row therapist-active-row" key={a.assignment_id}>
+        <div>
+          <strong>{a.therapist_code} · {a.therapist_name||a.therapist_email}</strong>
+          <small>{a.therapist_email}</small>
+        </div>
+        <div>
+          <strong>{a.child_name}</strong>
+          <small>{a.grade_or_program||'Class not set'}{a.section?' · Section '+a.section:''}</small>
+        </div>
+        <button className="mini-button danger" onClick={()=>void unassign(a.assignment_id)}>Unassign</button>
+      </div>)}
+      {!assignments.length&&<p className="helper">No therapist-to-student assignments yet.</p>}
+    </div>
+  </div>
+}
+
+function TherapistRosterPanel(){
+  const [rows,setRows]=useState<TherapistStudentRow[]>([])
+  const [loading,setLoading]=useState(true)
+  const [error,setError]=useState('')
+
+  useEffect(()=>{void (async()=>{
+    const {data,error}=await supabase.rpc('therapist_my_students')
+    if(error){setError(error.message);setRows([])}
+    else setRows((data||[]) as TherapistStudentRow[])
+    setLoading(false)
+  })()},[])
+
+  if(loading)return <div className="panel">Loading assigned therapy students…</div>
+  if(error)return <div className="status-message">{error}</div>
+  if(!rows.length)return null
+
+  const code=rows[0]?.therapist_code
+
+  return <div className="panel therapist-roster-panel">
+    <div className="panel-title"><div>
+      <h2>My Therapy Students</h2>
+      <p>{code?'Therapist ID '+code+' · ':''}Students assigned to your therapy caseload, with their current class information.</p>
+    </div></div>
+    <div className="cards-list">
+      {rows.map(row=><div className="person-row" key={row.child_id}>
+        <div>
+          <strong>{row.first_name} {row.last_name}</strong>
+          <small>{row.grade_or_program||'Class not set'}{row.section?' · Section '+row.section:''}{row.student_identifier?' · '+row.student_identifier:''}</small>
+        </div>
+        <span className="badge active">Therapy student</span>
+      </div>)}
+    </div>
+  </div>
+}
+
 export function StaffCare(){
-  return <CareManager mode="staff"/>
+  return <div className="care-workspace">
+    <TherapistRosterPanel/>
+    <CareManager mode="staff"/>
+  </div>
 }
 
 export function AdminCare(){
-  return <CareManager mode="admin"/>
+  return <div className="care-workspace">
+    <TherapistAssignmentsPanel/>
+    <CareManager mode="admin"/>
+  </div>
 }
 
 export function ParentAppointments({childId}:{childId:string}){

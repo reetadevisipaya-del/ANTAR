@@ -138,7 +138,15 @@ export default function AdminPeopleAccess({
     })
 
     if(error){
-      setMessage(error.message||'Unable to add this person.')
+      let detail=error.message||'Unable to add this person.'
+      try{
+        const response=(error as any).context
+        if(response?.json){
+          const body=await response.json()
+          if(body?.error) detail=body.error
+        }
+      }catch{}
+      setMessage(detail)
       setBusy(false)
       return
     }

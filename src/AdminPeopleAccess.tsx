@@ -15,6 +15,8 @@ export type AdminMember = {
 type ClassRow={id:string;name:string;section?:string;academic_year?:string}
 type ChildRow={id:string;first_name:string;last_name?:string;grade_or_program?:string;section?:string;student_identifier?:string}
 type EnrollmentRow={class_id:string;child_id:string}
+type CanonicalClassRow={class_id:string;class_name:string;section?:string;academic_year?:string}
+type CanonicalChildRow={child_id:string;first_name:string;last_name?:string;student_identifier?:string;current_class_id?:string|null;current_class_name?:string|null;current_section?:string|null}
 type ParentLink={id:string;parent_id:string;child_id:string;status:string}
 
 const roleLabel=(value:string)=>value.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase())
@@ -58,20 +60,38 @@ export default function AdminPeopleAccess({
   }
 
   async function loadAccessData(){
-    const [classRes,childRes,enrollmentRes]=await Promise.all([
-      supabase.from('classes').select('id,name,section,academic_year').eq('active',true).order('name'),
-      supabase.from('children').select('id,first_name,last_name,grade_or_program,section,student_identifier').eq('active',true).order('first_name'),
-      supabase.from('class_enrollments').select('class_id,child_id').eq('active',true),
+    const [classRes,childRes]=await Promise.all([
+      supabase.rpc('admin_classes_overview'),
+      supabase.rpc('admin_children_class_status'),
     ])
 
-    if(classRes.error||childRes.error||enrollmentRes.error){
-      setMessage(classRes.error?.message||childRes.error?.message||enrollmentRes.error?.message||'Unable to load class and child access.')
+    if(classRes.error||childRes.error){
+      setMessage(classRes.error?.message||childRes.error?.message||'Unable to load class and child access.')
       return
     }
 
-    const nextClasses=(classRes.data||[]) as ClassRow[]
-    const nextChildren=(childRes.data||[]) as ChildRow[]
-    const nextEnrollments=(enrollmentRes.data||[]) as EnrollmentRow[]
+    const canonicalClasses=(classRes.data||[]) as CanonicalClassRow[]
+    const canonicalChildren=(childRes.data||[]) as CanonicalChildRow[]
+
+    const nextClasses:ClassRow[]=canonicalClasses.map(row=>({
+      id:row.class_id,
+      name:row.class_name,
+      section:row.section,
+      academic_year:row.academic_year,
+    }))
+
+    const nextChildren:ChildRow[]=canonicalChildren.map(row=>({
+      id:row.child_id,
+      first_name:row.first_name,
+      last_name:row.last_name,
+      grade_or_program:row.current_class_name||undefined,
+      section:row.current_section||undefined,
+      student_identifier:row.student_identifier,
+    }))
+
+    const nextEnrollments:EnrollmentRow[]=canonicalChildren
+      .filter(row=>!!row.current_class_id)
+      .map(row=>({class_id:String(row.current_class_id),child_id:row.child_id}))
 
     setClasses(nextClasses)
     setChildren(nextChildren)
@@ -281,7 +301,7 @@ export default function AdminPeopleAccess({
       {role==='parent'&&<div className="parent-access-preview">
         <strong>Parent access preview</strong>
         <span>
-          This parent will be linked to <b>{inviteRoster.find(c=>c.id===inviteChildId)?.first_name||'the selected child'}</b> in <b>{classes.find(c=>c.id===inviteClassId)?.name||'the selected class'}{classes.find(c=>c.id===inviteClassId)?.section?` · Section ${classes.find(c=>c.id===inviteClassId)?.section}`:''}</b>.
+          This parent will be linked to <b>{inviteRoster.find(c=>c.id===inviteChildId)?.first_name||'the selected enrolled child'}</b> in <b>{classes.find(c=>c.id===inviteClassId)?.name||'the selected class'}{classes.find(c=>c.id===inviteClassId)?.section?` · Section ${classes.find(c=>c.id===inviteClassId)?.section}`:''}</b>.
         </span>
         <small>They will not automatically see other children in the institution.</small>
       </div>}

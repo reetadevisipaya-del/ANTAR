@@ -39,6 +39,32 @@ type AdminClassRow = {
   active?: boolean | null
 }
 
+type AdminClassOverview = {
+  class_id: string
+  class_name: string
+  section?: string
+  academic_year?: string
+  student_count: number
+}
+
+type AdminChildClassRow = {
+  child_id: string
+  first_name: string
+  last_name?: string
+  student_identifier?: string
+  current_class_id?: string | null
+  current_class_name?: string | null
+  current_section?: string | null
+}
+
+type AdminRosterRow = {
+  enrollment_id: string
+  child_id: string
+  first_name: string
+  last_name?: string
+  student_identifier?: string
+}
+
 const label = (value?: string) =>
   value ? value.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''
 
@@ -355,27 +381,65 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
 }
 
 export function AdminClassAssignmentPanel() {
-  const [classes, setClasses] = useState<AdminClassRow[]>([])
+  const [assignments, setAssignments] = useState<AdminClassRow[]>([])
+  const [overview, setOverview] = useState<AdminClassOverview[]>([])
+  const [children, setChildren] = useState<AdminChildClassRow[]>([])
+  const [rosters, setRosters] = useState<Record<string, AdminRosterRow[]>>({})
   const [staff, setStaff] = useState<StaffDirectoryRow[]>([])
   const [choice, setChoice] = useState<Record<string, string>>({})
+
+  const [className, setClassName] = useState('')
+  const [classSection, setClassSection] = useState('')
+  const [academicYear, setAcademicYear] = useState('2026-27')
+
+  const [enrollClassId, setEnrollClassId] = useState('')
+  const [enrollChildId, setEnrollChildId] = useState('')
+
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
+  const [busy, setBusy] = useState(false)
 
   async function load() {
     setLoading(true)
-    const [classResult, staffResult] = await Promise.all([
+
+    const [assignmentResult, staffResult, overviewResult, childrenResult] = await Promise.all([
       supabase.rpc('admin_class_assignments'),
       supabase.rpc('admin_staff_directory'),
+      supabase.rpc('admin_classes_overview'),
+      supabase.rpc('admin_children_class_status'),
     ])
 
-    if (classResult.error || staffResult.error) {
-      setMessage(classResult.error?.message || staffResult.error?.message || 'Unable to load class assignments.')
+    if (assignmentResult.error || staffResult.error || overviewResult.error || childrenResult.error) {
+      setMessage(
+        assignmentResult.error?.message ||
+        staffResult.error?.message ||
+        overviewResult.error?.message ||
+        childrenResult.error?.message ||
+        'Unable to load classes.'
+      )
       setLoading(false)
       return
     }
 
-    setClasses((classResult.data || []) as AdminClassRow[])
+    const nextOverview=((overviewResult.data || []) as AdminClassOverview[]).map(row=>({
+      ...row,
+      student_count:Number(row.student_count||0),
+    }))
+
+    const rosterEntries=await Promise.all(
+      nextOverview.map(async cls=>{
+        const result=await supabase.rpc('admin_class_students',{p_class_id:cls.class_id})
+        return [cls.class_id,result.error?[]:(result.data||[]) as AdminRosterRow[]] as const
+      })
+    )
+
+    setAssignments((assignmentResult.data || []) as AdminClassRow[])
     setStaff((staffResult.data || []) as StaffDirectoryRow[])
+    setOverview(nextOverview)
+    setChildren((childrenResult.data || []) as AdminChildClassRow[])
+    setRosters(Object.fromEntries(rosterEntries))
+    setEnrollClassId(current=>current&&nextOverview.some(x=>x.class_id===current)?current:(nextOverview[0]?.class_id||''))
+    setEnrollChildId(current=>current&&((childrenResult.data||[]) as AdminChildClassRow[]).some(x=>x.child_id===current)?current:(((childrenResult.data||[]) as AdminChildClassRow[])[0]?.child_id||''))
     setLoading(false)
   }
 
@@ -383,14 +447,86 @@ export function AdminClassAssignmentPanel() {
     void load()
   }, [])
 
-  const grouped = useMemo(() => {
-    const map = new Map<string, { info: AdminClassRow; assignments: AdminClassRow[] }>()
-    classes.forEach(row => {
-      if (!map.has(row.class_id)) map.set(row.class_id, { info: row, assignments: [] })
-      if (row.staff_id && row.active) map.get(row.class_id)!.assignments.push(row)
+  const assignmentMap = useMemo(() => {
+    const map = new Map<string, AdminClassRow[]>()
+    assignments.forEach(row=>{
+      if(!row.staff_id || !row.active) return
+      if(!map.has(row.class_id)) map.set(row.class_id,[])
+      map.get(row.class_id)!.push(row)
     })
-    return [...map.values()]
-  }, [classes])
+    return map
+  }, [assignments])
+
+  const unassignedChildren=useMemo(
+    ()=>children.filter(child=>!child.current_class_id),
+    [children],
+  )
+
+  async function createClass() {
+    if(!className.trim()){
+      setMessage('Enter a class name first.')
+      return
+    }
+
+    setBusy(true)
+    setMessage('Creating class…')
+    const {error}=await supabase.rpc('admin_create_class',{
+      p_name:className.trim(),
+      p_section:classSection.trim()||null,
+      p_academic_year:academicYear.trim()||null,
+    })
+
+    if(error){
+      setMessage(error.message)
+      setBusy(false)
+      return
+    }
+
+    setClassName('')
+    setClassSection('')
+    setMessage('Class created. You can now enroll children and assign staff.')
+    await load()
+    setBusy(false)
+  }
+
+  async function enrollChild() {
+    if(!enrollClassId || !enrollChildId){
+      setMessage('Choose both a class and a child.')
+      return
+    }
+
+    setBusy(true)
+    setMessage('Saving enrollment…')
+    const {error}=await supabase.rpc('admin_enroll_child',{
+      p_class_id:enrollClassId,
+      p_child_id:enrollChildId,
+    })
+
+    if(error){
+      setMessage(error.message)
+      setBusy(false)
+      return
+    }
+
+    setMessage('Child enrollment updated successfully.')
+    await load()
+    setBusy(false)
+  }
+
+  async function unenrollChild(childId:string) {
+    setBusy(true)
+    setMessage('Removing child from class…')
+    const {error}=await supabase.rpc('admin_unenroll_child',{p_child_id:childId})
+    if(error){
+      setMessage(error.message)
+      setBusy(false)
+      return
+    }
+
+    setMessage('Child removed from the class. You can enroll them into another class anytime.')
+    await load()
+    setBusy(false)
+  }
 
   async function assign(classId: string) {
     const staffId = choice[classId]
@@ -399,49 +535,140 @@ export function AdminClassAssignmentPanel() {
       return
     }
 
+    setBusy(true)
     setMessage('Assigning class…')
     const { error } = await supabase.rpc('admin_assign_staff_to_class', {
       p_class_id: classId,
       p_staff_id: staffId,
     })
+
     if (error) {
       setMessage(error.message)
+      setBusy(false)
       return
     }
 
     setMessage('Class assigned successfully.')
     await load()
+    setBusy(false)
   }
 
-  if (loading) return <div className="panel">Loading class assignments…</div>
+  if (loading) return <div className="panel">Loading classes and enrollments…</div>
 
-  return <div className="panel">
-    <div className="panel-title">
-      <div>
-        <h2>Classes & Teacher Assignment</h2>
-        <p>Assign each class to an active Teacher or Special Educator. The class will then appear automatically in that staff member's portal.</p>
-      </div>
-    </div>
-
+  return <div className="class-admin-workspace">
     {message && <div className="status-message admin-status">{message}</div>}
 
-    <div className="cards-list">
-      {grouped.map(({ info, assignments }) => <div className="assign-row" key={info.class_id}>
+    <div className="panel class-setup-panel">
+      <div className="panel-title">
         <div>
-          <strong>{info.class_name}{info.section ? ` — Section ${info.section}` : ''}</strong>
-          <small>
-            {assignments.length
-              ? assignments.map(a => `${a.staff_email} (${label(a.staff_role || '')})`).join(', ')
-              : 'No teacher assigned'}
-          </small>
+          <h2>Classes, Sections & Student Enrollment</h2>
+          <p>Create the official class structure first, then enroll each child into exactly one active class. Parent access will use this enrollment.</p>
         </div>
-        <select value={choice[info.class_id] || ''} onChange={e => setChoice(prev => ({ ...prev, [info.class_id]: e.target.value }))}>
-          <option value="">Choose staff…</option>
-          {staff.map(s => <option key={s.user_id} value={s.user_id}>{s.email} — {label(s.role)}</option>)}
-        </select>
-        <button className="mini-button" disabled={!choice[info.class_id]} onClick={() => void assign(info.class_id)}>Assign</button>
-      </div>)}
+      </div>
+
+      <div className="class-admin-grid">
+        <div className="class-admin-card">
+          <div className="class-admin-card-head">
+            <span className="feature-icon"><School size={20}/></span>
+            <div><strong>Create class</strong><small>Add a grade/programme and section.</small></div>
+          </div>
+          <label>Class / programme
+            <input value={className} onChange={e=>setClassName(e.target.value)} placeholder="e.g. Grade 5"/>
+          </label>
+          <label>Section
+            <input value={classSection} onChange={e=>setClassSection(e.target.value)} placeholder="e.g. A"/>
+          </label>
+          <label>Academic year
+            <input value={academicYear} onChange={e=>setAcademicYear(e.target.value)} placeholder="2026-27"/>
+          </label>
+          <button className="primary-button" disabled={busy} onClick={()=>void createClass()}><Plus size={16}/> Create Class</button>
+        </div>
+
+        <div className="class-admin-card">
+          <div className="class-admin-card-head">
+            <span className="feature-icon"><Users size={20}/></span>
+            <div><strong>Enroll or move child</strong><small>One child can have only one active class enrollment.</small></div>
+          </div>
+          <label>Child
+            <select value={enrollChildId} onChange={e=>setEnrollChildId(e.target.value)}>
+              {children.map(child=><option key={child.child_id} value={child.child_id}>
+                {child.first_name} {child.last_name}{child.current_class_name?` — currently ${child.current_class_name}${child.current_section?` ${child.current_section}`:''}`:' — not enrolled'}
+              </option>)}
+            </select>
+          </label>
+          <label>Class & section
+            <select value={enrollClassId} onChange={e=>setEnrollClassId(e.target.value)}>
+              {overview.map(cls=><option key={cls.class_id} value={cls.class_id}>
+                {cls.class_name}{cls.section?` — Section ${cls.section}`:''}{cls.academic_year?` · ${cls.academic_year}`:''}
+              </option>)}
+            </select>
+          </label>
+          <button className="primary-button" disabled={busy||!enrollClassId||!enrollChildId} onClick={()=>void enrollChild()}>
+            <CheckCircle2 size={16}/> Save Enrollment
+          </button>
+        </div>
+      </div>
+
+      <div className="class-status-strip">
+        <span><strong>{overview.length}</strong> active classes</span>
+        <span><strong>{children.length-unassignedChildren.length}</strong> enrolled children</span>
+        <span><strong>{unassignedChildren.length}</strong> not enrolled</span>
+      </div>
+
+      {!!unassignedChildren.length&&<div className="unenrolled-box">
+        <strong>Children needing a class</strong>
+        <div>
+          {unassignedChildren.map(child=><span key={child.child_id}>{child.first_name} {child.last_name}</span>)}
+        </div>
+      </div>}
     </div>
+
+    <div className="class-roster-grid">
+      {overview.map(cls=>{
+        const classAssignments=assignmentMap.get(cls.class_id)||[]
+        const roster=rosters[cls.class_id]||[]
+
+        return <div className="panel class-roster-card" key={cls.class_id}>
+          <div className="class-roster-heading">
+            <div>
+              <span className="eyebrow">{cls.academic_year||'Academic year'}</span>
+              <h3>{cls.class_name}{cls.section?` — Section ${cls.section}`:''}</h3>
+              <p>{cls.student_count} enrolled student{cls.student_count===1?'':'s'}</p>
+            </div>
+            <span className="class-count-badge">{cls.student_count}</span>
+          </div>
+
+          <div className="class-staff-box">
+            <strong>Assigned staff</strong>
+            <small>
+              {classAssignments.length
+                ? classAssignments.map(a=>`${a.staff_email} (${label(a.staff_role||'')})`).join(', ')
+                : 'No teacher or special educator assigned'}
+            </small>
+            <div className="class-assign-inline">
+              <select value={choice[cls.class_id]||''} onChange={e=>setChoice(prev=>({...prev,[cls.class_id]:e.target.value}))}>
+                <option value="">Choose staff…</option>
+                {staff.map(s=><option key={s.user_id} value={s.user_id}>{s.email} — {label(s.role)}</option>)}
+              </select>
+              <button className="mini-button" disabled={busy||!choice[cls.class_id]} onClick={()=>void assign(cls.class_id)}>Assign</button>
+            </div>
+          </div>
+
+          <div className="class-student-list">
+            <strong>Enrolled children</strong>
+            {roster.map(student=><div className="class-student-row" key={student.child_id}>
+              <div>
+                <b>{student.first_name} {student.last_name}</b>
+                <small>{student.student_identifier||'Student ID not set'}</small>
+              </div>
+              <button className="mini-button danger" disabled={busy} onClick={()=>void unenrollChild(student.child_id)}><Trash2 size={14}/> Remove</button>
+            </div>)}
+            {!roster.length&&<p className="helper">No children enrolled in this class yet.</p>}
+          </div>
+        </div>
+      })}
+    </div>
+
     <AdminSchedule/>
   </div>
 }

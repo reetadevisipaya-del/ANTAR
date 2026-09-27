@@ -3,6 +3,7 @@ import { BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, FileText, Plus, S
 import { supabase } from './supabase'
 import { AdminSchedule, StaffSchedule } from './ScheduleSystem'
 import { StaffDocuments } from './DocumentSystem'
+import { StaffCare } from './CareSystem'
 
 type StaffClass = {
   class_id: string
@@ -42,7 +43,7 @@ const label = (value?: string) =>
   value ? value.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''
 
 export function StaffAttendancePortal({ userId }: { userId: string }) {
-  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'documents' | 'schedule' | 'attendance'>('home')
+  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
   const [selectedClass, setSelectedClass] = useState('')
@@ -246,6 +247,7 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
       <button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>
       <button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>
       <button className={tab==='documents'?'active':''} onClick={()=>setTab('documents')}><FileText size={17}/>Documents</button>
+      <button className={tab==='care'?'active':''} onClick={()=>setTab('care')}><CalendarDays size={17}/>Appointments & Therapy</button>
       <button className={tab==='schedule'?'active':''} onClick={()=>setTab('schedule')}><CalendarDays size={17}/>Schedule</button>
       <button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>
     </div>
@@ -264,6 +266,7 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
         <button className="feature-card" onClick={()=>setTab('report')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Daily Report</strong><small>Write a daily update for one student</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('documents')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Documents</strong><small>Upload secure student records</small></span><span className="arrow">→</span></button>
+        <button className="feature-card" onClick={()=>setTab('care')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Appointments & Therapy</strong><small>Manage child care schedules and sessions</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('schedule')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Schedule</strong><small>Add class timetable and events</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('attendance')}><span className="feature-icon"><ClipboardCheck size={21}/></span><span><strong>Attendance</strong><small>Present or Absent, then save</small></span><span className="arrow">→</span></button>
       </div>
@@ -325,6 +328,7 @@ export function StaffAttendancePortal({ userId }: { userId: string }) {
       </div>
     </div>:
     tab==='documents'?<StaffDocuments/>:
+    tab==='care'?<StaffCare/>:
     tab==='schedule'?<StaffSchedule classes={classes}/>:
     <div className="panel">
       <div className="panel-title"><div><h2>Attendance</h2><p>Choose a class and date, mark Present or Absent, then save.</p></div></div>

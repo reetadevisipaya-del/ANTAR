@@ -17,11 +17,11 @@ const roleLabel=(r:string)=>r.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCa
 function Shell({children}:{children:React.ReactNode}){return <main className="app-shell"><div className="ambient ambient-one"/><div className="ambient ambient-two"/>{children}</main>}
 function Brand(){return <div className="brand"><div className="brand-mark">A</div><div><div className="brand-name">ANTAR</div><div className="brand-tagline">Every child leaves a mark.</div></div></div>}
 function Landing(){const n=useNavigate();return <Shell><section className="auth-layout"><div className="intro-panel"><Brand/><div className="intro-copy"><span className="eyebrow">Secure care communication</span><h1>One calm place for families, care teams and institutions.</h1><p>ANTAR brings learning, care updates and communication together in one private institution-connected space.</p><div className="trust-row"><span><LockKeyhole size={17}/> Private by design</span><span><Building2 size={17}/> Institution connected</span></div></div></div><div className="portal-panel"><div className="portal-card"><div className="panel-heading"><span className="eyebrow">Choose your portal</span><h2>Welcome to ANTAR</h2><p>Select the account type assigned by your institution.</p></div><div className="portal-grid">{(Object.keys(portalCopy) as Portal[]).map(p=>{const x=portalCopy[p],I=x.icon;return <button className="portal-option" key={p} onClick={()=>n(`/login/${p}`)}><span className="portal-icon"><I size={22}/></span><span><strong>{x.title}</strong><small>{x.subtitle}</small></span><span className="arrow">→</span></button>})}</div><p className="legal-copy">Access is limited to accounts authorized by a participating institution.</p></div></div></section></Shell>}
-function Login(){const {portal='parent'}=useParams();const p=(['parent','staff','admin'].includes(portal)?portal:'parent') as Portal;const copy=portalCopy[p],I=copy.icon;const {signIn,user,membership}=useAuth();const n=useNavigate();const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);if(user&&membership)return <Navigate to="/app" replace/>;async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{await signIn(email.trim(),password,p);n('/app',{replace:true})}catch(x){setError(x instanceof Error?x.message:'Unable to sign in.')}finally{setBusy(false)}}return <Shell><section className="single-card-wrap"><div className="login-card"><button className="back-link" onClick={()=>n('/')}>← All portals</button><Brand/><div className="login-title-row"><span className="portal-icon large"><I size={24}/></span><div><span className="eyebrow">{copy.title}</span><h1>Sign in to ANTAR</h1></div></div><p className="login-subtitle">{copy.subtitle}</p><form onSubmit={submit} className="login-form"><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button className="text-button" type="button" onClick={async()=>{if(!email.trim())return setError('Enter your email address first.');const {error}=await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:`${window.location.origin}${import.meta.env.BASE_URL}reset-password`});setError(error?error.message:'Password reset email sent.')}}>Forgot password?</button>{error&&<div className="status-message">{error}</div>}<button className="primary-button" disabled={busy}>{busy?'Signing in…':'Sign in securely'}</button></form></div></section></Shell>}
+function Login(){const {portal='parent'}=useParams();const p=(['parent','staff','admin'].includes(portal)?portal:'parent') as Portal;const copy=portalCopy[p],I=copy.icon;const {signIn,user,membership}=useAuth();const n=useNavigate();const [email,setEmail]=useState(''),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);if(user&&membership)return <Navigate to="/app" replace/>;async function submit(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{await signIn(email.trim(),password,p);n('/app',{replace:true})}catch(x){setError(x instanceof Error?x.message:'Unable to sign in.')}finally{setBusy(false)}}return <Shell><section className="single-card-wrap"><div className="login-card"><button className="back-link" onClick={()=>n('/')}>← All portals</button><Brand/><div className="login-title-row"><span className="portal-icon large"><I size={24}/></span><div><span className="eyebrow">{copy.title}</span><h1>Sign in to ANTAR</h1></div></div><p className="login-subtitle">{copy.subtitle}</p><form onSubmit={submit} className="login-form"><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button className="text-button" type="button" onClick={async()=>{if(!email.trim())return setError('Enter your email address first.');const {error}=await supabase.auth.resetPasswordForEmail(email.trim(),{redirectTo:`${window.location.origin}${import.meta.env.BASE_URL}?reset=1`});setError(error?error.message:'Password reset email sent.')}}>Forgot password?</button>{error&&<div className="status-message">{error}</div>}<button className="primary-button" disabled={busy}>{busy?'Signing in…':'Sign in securely'}</button></form></div></section></Shell>}
 function ResetPassword(){
   const [password,setPassword]=useState('')
   const [confirmPassword,setConfirmPassword]=useState('')
-  const [status,setStatus]=useState('Checking your secure invitation…')
+  const [status,setStatus]=useState('Opening your secure ANTAR invitation…')
   const [ready,setReady]=useState(false)
   const [busy,setBusy]=useState(false)
   const n=useNavigate()
@@ -29,29 +29,65 @@ function ResetPassword(){
   useEffect(()=>{
     let mounted=true
 
-    async function checkSession(){
-      const {data,error}=await supabase.auth.getSession()
-      if(!mounted)return
-      if(error){
-        setStatus(error.message)
-        setReady(false)
-        return
-      }
-      if(data.session?.user){
-        setStatus('Invitation verified. Choose a password for your ANTAR account.')
-        setReady(true)
-      }else{
-        setStatus('This invitation link is invalid, expired, or has already been used. Ask your institute admin to send a new invite.')
+    async function establishInviteSession(){
+      try{
+        let {data:{session},error:sessionError}=await supabase.auth.getSession()
+        if(sessionError)throw sessionError
+
+        const url=new URL(window.location.href)
+
+        if(!session){
+          const code=url.searchParams.get('code')
+          if(code){
+            const {data,error}=await supabase.auth.exchangeCodeForSession(code)
+            if(error)throw error
+            session=data.session
+          }
+        }
+
+        if(!session && window.location.hash){
+          const hash=new URLSearchParams(window.location.hash.replace(/^#/,''))
+          const accessToken=hash.get('access_token')
+          const refreshToken=hash.get('refresh_token')
+          if(accessToken&&refreshToken){
+            const {data,error}=await supabase.auth.setSession({
+              access_token:accessToken,
+              refresh_token:refreshToken,
+            })
+            if(error)throw error
+            session=data.session
+          }
+        }
+
+        if(!mounted)return
+
+        if(session?.user){
+          setStatus('Invitation verified. Create your ANTAR password below.')
+          setReady(true)
+
+          const clean=new URL(window.location.href)
+          clean.hash=''
+          clean.searchParams.delete('code')
+          if(clean.searchParams.get('invite')==='1'||clean.searchParams.get('reset')==='1'){
+            window.history.replaceState({},'',clean.pathname+clean.search)
+          }
+        }else{
+          setStatus('This setup link is invalid, expired, or has already been used. Ask your institute admin to resend the password setup email.')
+          setReady(false)
+        }
+      }catch(error){
+        if(!mounted)return
+        setStatus(error instanceof Error?error.message:'Unable to verify this invitation.')
         setReady(false)
       }
     }
 
-    void checkSession()
+    void establishInviteSession()
 
     const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{
       if(!mounted)return
-      if((event==='SIGNED_IN'||event==='PASSWORD_RECOVERY'||event==='TOKEN_REFRESHED')&&session?.user){
-        setStatus('Invitation verified. Choose a password for your ANTAR account.')
+      if((event==='SIGNED_IN'||event==='PASSWORD_RECOVERY'||event==='TOKEN_REFRESHED'||event==='INITIAL_SESSION')&&session?.user){
+        setStatus('Invitation verified. Create your ANTAR password below.')
         setReady(true)
       }
     })
@@ -76,23 +112,24 @@ function ResetPassword(){
 
     setBusy(true)
     setStatus('Saving your password securely…')
-
     const {error}=await supabase.auth.updateUser({password})
+
     if(error){
       setStatus(error.message)
       setBusy(false)
       return
     }
 
-    setStatus('Password created. Opening your ANTAR portal…')
-    setTimeout(()=>n('/app',{replace:true}),700)
+    setStatus('Your ANTAR account is ready. Opening your portal…')
+    setTimeout(()=>n('/app',{replace:true}),600)
   }
 
   return <Shell><section className="single-card-wrap"><div className="login-card">
     <Brand/>
-    <span className="eyebrow">ANTAR invitation</span>
-    <h1>Set your password</h1>
-    <p className="login-subtitle">Create your own private password. Your institute administrator cannot see it.</p>
+    <span className="eyebrow">Secure account setup</span>
+    <h1>Create your ANTAR password</h1>
+    <p className="login-subtitle">Your invitation has connected this email to ANTAR. Choose a private password known only to you.</p>
+    <div className={ready?'status-message success':'status-message'}>{status}</div>
     <form className="login-form" onSubmit={submit}>
       <label>New password
         <input minLength={8} autoComplete="new-password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required disabled={!ready||busy}/>
@@ -100,7 +137,6 @@ function ResetPassword(){
       <label>Confirm password
         <input minLength={8} autoComplete="new-password" type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required disabled={!ready||busy}/>
       </label>
-      {status&&<div className="status-message">{status}</div>}
       <button className="primary-button" disabled={!ready||busy}>{busy?'Creating account…':'Set password & open ANTAR'}</button>
       {!ready&&<button type="button" className="secondary-button" onClick={()=>n('/')}>Back to ANTAR</button>}
     </form>
@@ -371,4 +407,4 @@ function StaffPortal({userId}:{userId:string}){
 }
 
 function ProtectedApp(){const {user,membership,loading,signOut}=useAuth();const loc=useLocation();if(loading)return <Shell><div className="loading-screen">Loading ANTAR…</div></Shell>;if(!user||!membership)return <Navigate to="/" replace state={{from:loc}}/>;const institutionName=membership.institutions?.name??'Your institution',role=membership.role;return <Shell><section className="dashboard-shell"><header className="dashboard-header"><Brand/><div className="header-actions"><div className="account-chip"><small>{institutionName}</small><strong>{roleLabel(role)}</strong></div><button className="secondary-button" onClick={()=>void signOut()}><LogOut size={17}/> Logout</button></div></header><div className="dashboard-content">{role==='institute_admin'?<AdminWorkspace institutionId={membership.institution_id}/>:role==='parent'?<ParentPortal userId={user.id}/>:<StaffAttendancePortal userId={user.id} role={role}/>}<div className="identity-strip"><ShieldCheck size={18}/><span>Protected session</span><span>{user.email}</span><span>{institutionName}</span></div></div></section></Shell>}
-export default function App(){return <Routes><Route path="/" element={<Landing/>}/><Route path="/login/:portal" element={<Login/>}/><Route path="/reset-password" element={<ResetPassword/>}/><Route path="/app" element={<ProtectedApp/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>}
+export default function App(){const loc=useLocation();const query=new URLSearchParams(loc.search);const isInviteFlow=query.get('invite')==='1'||query.get('reset')==='1';if(loc.pathname==='/'&&isInviteFlow)return <ResetPassword/>;return <Routes><Route path="/" element={<Landing/>}/><Route path="/login/:portal" element={<Login/>}/><Route path="/reset-password" element={<ResetPassword/>}/><Route path="/app" element={<ProtectedApp/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>}

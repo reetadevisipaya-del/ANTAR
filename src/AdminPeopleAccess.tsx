@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Link2, MailPlus, ShieldCheck, Unlink, UserPlus } from 'lucide-react'
+import { CheckCircle2, Link2, MailPlus, ShieldCheck, Unlink, UserPlus } from 'lucide-react'
 import { supabase } from './supabase'
 
 export type AdminMember = {
@@ -42,6 +42,7 @@ export default function AdminPeopleAccess({
 
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
+  const [inviteReceipt,setInviteReceipt]=useState<{name:string;email:string;invited:boolean}|null>(null)
   const [currentUserId,setCurrentUserId]=useState('')
 
   const parents=useMemo(
@@ -145,7 +146,11 @@ export default function AdminPeopleAccess({
     }
 
     setBusy(true)
+    setInviteReceipt(null)
     setMessage('Creating ANTAR access…')
+
+    const submittedName=name.trim()||email.trim().split('@')[0]
+    const submittedEmail=email.trim()
 
     const {data,error}=await supabase.functions.invoke('invite-member',{
       body:{
@@ -177,7 +182,11 @@ export default function AdminPeopleAccess({
       return
     }
 
-    setMessage(data?.message||'Access granted successfully.')
+    const wasInvited=Boolean(data?.invited)
+    setInviteReceipt({name:submittedName,email:submittedEmail,invited:wasInvited})
+    setMessage(wasInvited
+      ? `Secure invitation sent to ${submittedName}.`
+      : `${submittedName} already has an ANTAR account. Their access has been updated; no duplicate account was created.`)
     setName('')
     setEmail('')
     setRole('parent')
@@ -260,6 +269,17 @@ export default function AdminPeopleAccess({
       </div>
 
       {message&&<div className="status-message admin-status">{message}</div>}
+
+      {inviteReceipt&&<div className={inviteReceipt.invited?'invite-receipt success':'invite-receipt'}>
+        <CheckCircle2 size={22}/>
+        <div>
+          <strong>{inviteReceipt.invited?`Email sent to ${inviteReceipt.name}`:`Access updated for ${inviteReceipt.name}`}</strong>
+          <span>{inviteReceipt.email}</span>
+          <small>{inviteReceipt.invited
+            ? 'They can open the latest ANTAR email, choose Accept invitation, create their password, and sign in.'
+            : 'This email already belongs to an ANTAR account, so a new invitation email was not sent.'}</small>
+        </div>
+      </div>}
 
       <form className="add-person-form parent-aware" onSubmit={invite}>
         <label>Full name

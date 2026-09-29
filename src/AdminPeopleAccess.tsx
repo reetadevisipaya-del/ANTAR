@@ -171,6 +171,10 @@ export default function AdminPeopleAccess({
           if(body?.error) detail=body.error
         }
       }catch{}
+      const normalized=detail.toLowerCase()
+      if(normalized.includes('email rate limit exceeded')||normalized.includes('over_email_send_rate_limit')){
+        detail='ANTAR email sending is temporarily limited by the current Supabase mail quota. No invitation was sent. Please wait before trying again, or configure custom SMTP for reliable institute invitations.'
+      }
       setMessage(detail)
       setBusy(false)
       return

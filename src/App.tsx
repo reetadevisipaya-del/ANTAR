@@ -21,90 +21,68 @@ function Login(){const {portal='parent'}=useParams();const p=(['parent','staff',
 function ResetPassword(){
   const [password,setPassword]=useState('')
   const [confirmPassword,setConfirmPassword]=useState('')
-  const [status,setStatus]=useState('Opening your secure ANTAR invitation…')
+  const [status,setStatus]=useState('Verifying your ANTAR invitation…')
   const [ready,setReady]=useState(false)
   const [busy,setBusy]=useState(false)
   const n=useNavigate()
 
+  async function establishSession(){
+    const url=new URL(window.location.href)
+    const hash=new URLSearchParams(window.location.hash.replace(/^#/,''))
+    const accessToken=hash.get('access_token')
+    const refreshToken=hash.get('refresh_token')
+    const code=url.searchParams.get('code')
+
+    if(accessToken&&refreshToken){
+      const {data,error}=await supabase.auth.setSession({
+        access_token:accessToken,
+        refresh_token:refreshToken,
+      })
+      if(error)throw error
+      return data.session
+    }
+
+    if(code){
+      const {data,error}=await supabase.auth.exchangeCodeForSession(code)
+      if(error)throw error
+      return data.session
+    }
+
+    const {data,error}=await supabase.auth.getSession()
+    if(error)throw error
+    return data.session
+  }
+
   useEffect(()=>{
     let mounted=true
 
-    async function establishInviteSession(){
-      try{
-        let {data:{session},error:sessionError}=await supabase.auth.getSession()
-        if(sessionError)throw sessionError
-
-        const url=new URL(window.location.href)
-
-        if(!session){
-          const code=url.searchParams.get('code')
-          if(code){
-            const {data,error}=await supabase.auth.exchangeCodeForSession(code)
-            if(error)throw error
-            session=data.session
-          }
-        }
-
-        if(!session && window.location.hash){
-          const hash=new URLSearchParams(window.location.hash.replace(/^#/,''))
-          const accessToken=hash.get('access_token')
-          const refreshToken=hash.get('refresh_token')
-          if(accessToken&&refreshToken){
-            const {data,error}=await supabase.auth.setSession({
-              access_token:accessToken,
-              refresh_token:refreshToken,
-            })
-            if(error)throw error
-            session=data.session
-          }
-        }
-
-        if(!mounted)return
-
-        if(session?.user){
-          setStatus('Invitation verified. Create your ANTAR password below.')
-          setReady(true)
-
-          const clean=new URL(window.location.href)
-          clean.hash=''
-          clean.searchParams.delete('code')
-          if(clean.searchParams.get('invite')==='1'||clean.searchParams.get('reset')==='1'){
-            window.history.replaceState({},'',clean.pathname+clean.search)
-          }
-        }else{
-          setStatus('This setup link is invalid, expired, or has already been used. Ask your institute admin to resend the password setup email.')
-          setReady(false)
-        }
-      }catch(error){
-        if(!mounted)return
-        setStatus(error instanceof Error?error.message:'Unable to verify this invitation.')
-        setReady(false)
-      }
-    }
-
-    void establishInviteSession()
-
-    const {data:listener}=supabase.auth.onAuthStateChange((event,session)=>{
+    void establishSession().then(session=>{
       if(!mounted)return
-      if((event==='SIGNED_IN'||event==='PASSWORD_RECOVERY'||event==='TOKEN_REFRESHED'||event==='INITIAL_SESSION')&&session?.user){
-        setStatus('Invitation verified. Create your ANTAR password below.')
+      if(session?.user){
         setReady(true)
+        setStatus('Invitation verified. Create your private ANTAR password below.')
+      }else{
+        setReady(false)
+        setStatus('This invitation link is invalid or has expired. Ask your institute admin to send a fresh setup email.')
       }
+    }).catch(error=>{
+      if(!mounted)return
+      setReady(false)
+      setStatus(error instanceof Error?error.message:'Unable to verify this invitation.')
     })
 
-    return()=>{
-      mounted=false
-      listener.subscription.unsubscribe()
-    }
+    return()=>{mounted=false}
   },[])
 
   async function submit(e:FormEvent){
     e.preventDefault()
-    if(!ready)return
+    if(!ready||busy)return
+
     if(password.length<8){
       setStatus('Password must be at least 8 characters.')
       return
     }
+
     if(password!==confirmPassword){
       setStatus('Passwords do not match.')
       return
@@ -112,24 +90,42 @@ function ResetPassword(){
 
     setBusy(true)
     setStatus('Saving your password securely…')
-    const {error}=await supabase.auth.updateUser({password})
 
-    if(error){
-      setStatus(error.message)
+    try{
+      let {data:{session}}=await supabase.auth.getSession()
+
+      if(!session){
+        session=await establishSession()
+      }
+
+      if(!session?.user){
+        throw new Error('Your secure setup session could not be restored. Please open the latest invitation email again.')
+      }
+
+      const {error}=await supabase.auth.updateUser({password})
+      if(error)throw error
+
+      const clean=new URL(window.location.href)
+      clean.hash=''
+      clean.search=''
+      window.history.replaceState({},'',clean.pathname)
+
+      setStatus('Password saved. Signing you in to ANTAR…')
+      setTimeout(()=>n('/app',{replace:true}),700)
+    }catch(error){
+      setStatus(error instanceof Error?error.message:'Unable to save your password.')
       setBusy(false)
-      return
     }
-
-    setStatus('Your ANTAR account is ready. Opening your portal…')
-    setTimeout(()=>n('/app',{replace:true}),600)
   }
 
-  return <Shell><section className="single-card-wrap"><div className="login-card">
+  return <Shell><section className="single-card-wrap"><div className="login-card invite-setup-card">
     <Brand/>
-    <span className="eyebrow">Secure account setup</span>
-    <h1>Create your ANTAR password</h1>
-    <p className="login-subtitle">Your invitation has connected this email to ANTAR. Choose a private password known only to you.</p>
+    <span className="eyebrow">Welcome to ANTAR</span>
+    <h1>Set your password</h1>
+    <p className="login-subtitle">Your institute has invited you to ANTAR. Create a private password to finish setting up your account.</p>
+
     <div className={ready?'status-message success':'status-message'}>{status}</div>
+
     <form className="login-form" onSubmit={submit}>
       <label>New password
         <input minLength={8} autoComplete="new-password" type="password" value={password} onChange={e=>setPassword(e.target.value)} required disabled={!ready||busy}/>
@@ -137,9 +133,13 @@ function ResetPassword(){
       <label>Confirm password
         <input minLength={8} autoComplete="new-password" type="password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required disabled={!ready||busy}/>
       </label>
-      <button className="primary-button" disabled={!ready||busy}>{busy?'Creating account…':'Set password & open ANTAR'}</button>
-      {!ready&&<button type="button" className="secondary-button" onClick={()=>n('/')}>Back to ANTAR</button>}
+      <button className="primary-button" disabled={!ready||busy}>{busy?'Saving password…':'Save password & sign in'}</button>
     </form>
+
+    <div className="access-flow-note">
+      <ShieldCheck size={17}/>
+      <span>Your password is private. Your institute administrator cannot see it.</span>
+    </div>
   </div></section></Shell>
 }
 

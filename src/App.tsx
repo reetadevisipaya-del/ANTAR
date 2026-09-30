@@ -270,7 +270,7 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
       </div>
     </div>:
     tab==='people'?<AdminPeopleAccess members={members} onRefresh={refresh}/>:
-    tab==='children'?<AdminChildRecords onNavigate={(destination,childId)=>{setBackTab('children');setContextChildId(childId||'');setTab(destination)}} onChanged={refresh}/>:
+    tab==='children'?<AdminChildRecords initialChildId={contextChildId||undefined} onNavigate={(destination,childId)=>{setBackTab('children');setContextChildId(childId||'');setTab(destination)}} onChanged={refresh}/>:
     tab==='classes'?<AdminClassesStudents/>:
     tab==='schedule'?<AdminSchedule/>:
     tab==='documents'?<AdminDocuments initialChildId={contextChildId||undefined}/>:

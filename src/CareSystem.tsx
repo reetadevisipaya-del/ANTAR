@@ -482,10 +482,10 @@ export function StaffCare({initialChildId}:{initialChildId?:string}={}){
   </div>
 }
 
-export function AdminCare(){
+export function AdminCare({initialChildId}:{initialChildId?:string}={}){
   return <div className="care-workspace">
     <TherapistAssignmentsPanel/>
-    <CareManager mode="admin"/>
+    <CareManager mode="admin" initialChildId={initialChildId}/>
   </div>
 }
 

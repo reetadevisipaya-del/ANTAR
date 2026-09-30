@@ -7,6 +7,7 @@ import { StaffCare, TherapistStudents } from './CareSystem'
 import Messaging from './Messaging'
 import Notifications, { type NotificationDestination } from './Notifications'
 import StaffStudentDashboard from './StaffStudentDashboard'
+import InAppNav from './InAppNav'
 
 type StaffClass = {
   class_id: string
@@ -93,6 +94,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
   const [message, setMessage] = useState('')
   const [notificationUnread,setNotificationUnread]=useState(0)
   const [messageChildId,setMessageChildId]=useState('')
+  const [returnToStudent,setReturnToStudent]=useState(false)
 
   async function loadClasses() {
     setLoading(true)
@@ -283,22 +285,59 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
   const currentClass=classes.find(c=>c.class_id===selectedClass)
   const roster=rosters[selectedClass]||[]
   const currentStudent=roster.find(s=>s.child_id===selectedStudent)
+  const tabLabel={
+    home:'Home',
+    classes:'My Classes',
+    students:isTherapist?'My Students':'Students',
+    student:'Student Overview',
+    report:'Daily Report',
+    homework:'Homework',
+    messages:'Messages',
+    notifications:'Notifications',
+    documents:'Documents',
+    care:'Appointments & Therapy',
+    schedule:'Schedule',
+    attendance:'Attendance',
+  }[tab]
+
+  function goBackInStaffPortal(){
+    if(tab==='student'&&!isTherapist){
+      setTab('classes')
+      return
+    }
+    if(returnToStudent&&selectedStudent&&!isTherapist){
+      setReturnToStudent(false)
+      setTab('student')
+      return
+    }
+    setReturnToStudent(false)
+    setMessageChildId('')
+    setTab('home')
+  }
 
   return <div className="staff-portal">
     <div className="staff-nav">
-      <button className={tab==='home'?'active':''} onClick={()=>setTab('home')}><School size={17}/>Home</button>
-      {!isTherapist&&<button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>My Classes</button>}
-      <button className={tab==='students'?'active':''} onClick={()=>setTab('students')}><Users size={17}/>{isTherapist?'My Students':'Students'}</button>
-      {!isTherapist&&<button className={tab==='student'?'active':''} onClick={()=>setTab('student')}><Users size={17}/>Student Overview</button>}
-      {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>}
-      {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>}
-      <button className={tab==='messages'?'active':''} onClick={()=>{setMessageChildId('');setTab('messages')}}><MessageCircle size={17}/>Messages</button>
-      <button className={tab==='notifications'?'active':''} onClick={()=>setTab('notifications')}><Bell size={17}/>Notifications{notificationUnread>0&&<b className="nav-unread-badge">{notificationUnread>99?'99+':notificationUnread}</b>}</button>
-      <button className={tab==='documents'?'active':''} onClick={()=>setTab('documents')}><FileText size={17}/>Documents</button>
-      <button className={tab==='care'?'active':''} onClick={()=>setTab('care')}><CalendarDays size={17}/>Appointments & Therapy</button>
-      {!isTherapist&&<button className={tab==='schedule'?'active':''} onClick={()=>setTab('schedule')}><CalendarDays size={17}/>Schedule</button>}
-      {!isTherapist&&<button className={tab==='attendance'?'active':''} onClick={()=>setTab('attendance')}><ClipboardCheck size={17}/>Attendance</button>}
+      <button className={tab==='home'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('home')}}><School size={17}/>Home</button>
+      {!isTherapist&&<button className={tab==='classes'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('classes')}}><BookOpen size={17}/>My Classes</button>}
+      <button className={tab==='students'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('students')}}><Users size={17}/>{isTherapist?'My Students':'Students'}</button>
+      {!isTherapist&&<button className={tab==='student'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('student')}}><Users size={17}/>Student Overview</button>}
+      {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('report')}}><FileText size={17}/>Daily Report</button>}
+      {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('homework')}}><BookOpen size={17}/>Homework</button>}
+      <button className={tab==='messages'?'active':''} onClick={()=>{setReturnToStudent(false);setMessageChildId('');setTab('messages')}}><MessageCircle size={17}/>Messages</button>
+      <button className={tab==='notifications'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('notifications')}}><Bell size={17}/>Notifications{notificationUnread>0&&<b className="nav-unread-badge">{notificationUnread>99?'99+':notificationUnread}</b>}</button>
+      <button className={tab==='documents'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('documents')}}><FileText size={17}/>Documents</button>
+      <button className={tab==='care'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('care')}}><CalendarDays size={17}/>Appointments & Therapy</button>
+      {!isTherapist&&<button className={tab==='schedule'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('schedule')}}><CalendarDays size={17}/>Schedule</button>}
+      {!isTherapist&&<button className={tab==='attendance'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('attendance')}}><ClipboardCheck size={17}/>Attendance</button>}
     </div>
+
+    {tab!=='home'&&<InAppNav
+      rootLabel={isTherapist?'Therapist Home':'Teacher Home'}
+      parentLabel={returnToStudent&&currentStudent?`${currentClass?.name||currentStudent.grade_or_program||'Class'} · ${currentStudent.first_name} ${currentStudent.last_name||''}`:undefined}
+      currentLabel={tabLabel}
+      backLabel={tab==='student'&&!isTherapist?'Back to my classes':returnToStudent&&selectedStudent&&!isTherapist?'Back to student overview':'Back to staff home'}
+      onBack={goBackInStaffPortal}
+    />}
 
     {message&&<div className="status-message admin-status">{message}</div>}
 
@@ -348,6 +387,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
         </div>
       </div>
       {selectedStudent?<StaffStudentDashboard childId={selectedStudent} onAction={action=>{
+        setReturnToStudent(true)
         if(action==='messages'){setMessageChildId(selectedStudent);setTab('messages');return}
         setTab(action)
       }}/>:<div className="panel">No student is available in this class.</div>}

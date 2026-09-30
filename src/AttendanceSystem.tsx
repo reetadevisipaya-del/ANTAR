@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, FileText, Plus, School, Trash2, Users } from 'lucide-react'
+import { BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, FileText, MessageCircle, Plus, School, Trash2, Users } from 'lucide-react'
 import { supabase } from './supabase'
 import { AdminSchedule, StaffSchedule } from './ScheduleSystem'
 import { StaffDocuments } from './DocumentSystem'
 import { StaffCare, TherapistStudents } from './CareSystem'
+import Messaging from './Messaging'
 
 type StaffClass = {
   class_id: string
@@ -70,7 +71,7 @@ const label = (value?: string) =>
 
 export function StaffAttendancePortal({ userId, role }: { userId: string; role?: string }) {
   const isTherapist=role==='therapist'
-  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
+  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'messages' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
   const [selectedClass, setSelectedClass] = useState('')
@@ -273,6 +274,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
       <button className={tab==='students'?'active':''} onClick={()=>setTab('students')}><Users size={17}/>{isTherapist?'My Students':'Students'}</button>
       {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>}
       {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>}
+      <button className={tab==='messages'?'active':''} onClick={()=>setTab('messages')}><MessageCircle size={17}/>Messages</button>
       <button className={tab==='documents'?'active':''} onClick={()=>setTab('documents')}><FileText size={17}/>Documents</button>
       <button className={tab==='care'?'active':''} onClick={()=>setTab('care')}><CalendarDays size={17}/>Appointments & Therapy</button>
       {!isTherapist&&<button className={tab==='schedule'?'active':''} onClick={()=>setTab('schedule')}><CalendarDays size={17}/>Schedule</button>}
@@ -292,6 +294,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
         {isTherapist?<button className="feature-card" onClick={()=>setTab('students')}><span className="feature-icon"><Users size={21}/></span><span><strong>My Students</strong><small>Assigned therapy students with class details</small></span><span className="arrow">→</span></button>:<button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><School size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Classes assigned by the institute</small></span><span className="arrow">→</span></button>}
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('report')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Daily Report</strong><small>Write a daily update for one student</small></span><span className="arrow">→</span></button>}
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>}
+        <button className="feature-card" onClick={()=>setTab('messages')}><span className="feature-icon"><MessageCircle size={21}/></span><span><strong>Parent Messages</strong><small>Private child-specific conversations with linked parents</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('documents')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Documents</strong><small>Upload secure student records</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('care')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Appointments & Therapy</strong><small>Manage child care schedules and sessions</small></span><span className="arrow">→</span></button>
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('schedule')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Schedule</strong><small>Add class timetable and events</small></span><span className="arrow">→</span></button>}
@@ -354,6 +357,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
         {!homework.length&&<p className="helper">No homework posted for this class on this date.</p>}
       </div>
     </div>:
+    tab==='messages'?<Messaging userId={userId} mode="staff"/>:
     tab==='documents'?<StaffDocuments/>:
     tab==='care'?<StaffCare/>:
     tab==='schedule'?<StaffSchedule classes={classes}/>:

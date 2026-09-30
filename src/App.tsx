@@ -152,6 +152,8 @@ type SLink={id:string;staff_id:string;child_id:string;assignment_type:string;act
 function AdminWorkspace({institutionId}:{institutionId:string}){
   type AdminTab='overview'|'people'|'children'|'classes'|'schedule'|'documents'|'care'|'assignments'
   const [tab,setTab]=useState<AdminTab>('overview')
+  const [backTab,setBackTab]=useState<AdminTab>('overview')
+  const [contextChildId,setContextChildId]=useState('')
   const [members,setMembers]=useState<Member[]>([])
   const [children,setChildren]=useState<Child[]>([])
   const [plinks,setPLinks]=useState<PLink[]>([])
@@ -222,21 +224,22 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
     </div>
 
     <div className="admin-tabs structured-tabs">
-      <button onClick={()=>setTab('overview')} className={tab==='overview'?'active':''}>Overview</button>
-      <button onClick={()=>setTab('people')} className={tab==='people'?'active':''}>People & Access</button>
-      <button onClick={()=>setTab('children')} className={tab==='children'?'active':''}>Child Records</button>
-      <button onClick={()=>setTab('classes')} className={tab==='classes'?'active':''}>Classes & Students</button>
-      <button onClick={()=>setTab('schedule')} className={tab==='schedule'?'active':''}>Schedule</button>
-      <button onClick={()=>setTab('documents')} className={tab==='documents'?'active':''}>Documents</button>
-      <button onClick={()=>setTab('care')} className={tab==='care'?'active':''}>Appointments & Therapy</button>
-      <button onClick={()=>setTab('assignments')} className={tab==='assignments'?'active':''}>Assignments</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('overview')}} className={tab==='overview'?'active':''}>Overview</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('people')}} className={tab==='people'?'active':''}>People & Access</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('children')}} className={tab==='children'?'active':''}>Child Records</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('classes')}} className={tab==='classes'?'active':''}>Classes & Students</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('schedule')}} className={tab==='schedule'?'active':''}>Schedule</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('documents')}} className={tab==='documents'?'active':''}>Documents</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('care')}} className={tab==='care'?'active':''}>Appointments & Therapy</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('assignments')}} className={tab==='assignments'?'active':''}>Assignments</button>
     </div>
 
     {tab!=='overview'&&<InAppNav
       rootLabel="Admin Overview"
+      parentLabel={backTab==='children'?'Child Records':undefined}
       currentLabel={tabLabels[tab]}
-      backLabel="Back to admin overview"
-      onBack={()=>setTab('overview')}
+      backLabel={backTab==='children'?'Back to child records':'Back to admin overview'}
+      onBack={()=>{setTab(backTab);if(backTab==='overview')setContextChildId('')}}
     />}
 
     {msg&&<div className="status-message admin-status">{msg}</div>}
@@ -267,11 +270,11 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
       </div>
     </div>:
     tab==='people'?<AdminPeopleAccess members={members} onRefresh={refresh}/>:
-    tab==='children'?<AdminChildRecords onNavigate={destination=>setTab(destination)} onChanged={refresh}/>:
+    tab==='children'?<AdminChildRecords onNavigate={(destination,childId)=>{setBackTab('children');setContextChildId(childId||'');setTab(destination)}} onChanged={refresh}/>:
     tab==='classes'?<AdminClassesStudents/>:
     tab==='schedule'?<AdminSchedule/>:
-    tab==='documents'?<AdminDocuments/>:
-    tab==='care'?<AdminCare/>:
+    tab==='documents'?<AdminDocuments initialChildId={contextChildId||undefined}/>:
+    tab==='care'?<AdminCare initialChildId={contextChildId||undefined}/>:
     <div className="panel assignment-workspace">
       <div className="panel-title"><div><h2>Parent & Staff Assignments</h2><p>These relationships decide which child each parent or directly assigned staff member can access.</p></div></div>
       <section className="assignment-section">

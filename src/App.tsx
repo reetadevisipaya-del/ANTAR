@@ -240,6 +240,8 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
       currentLabel={tabLabels[tab]}
       backLabel={backTab==='children'?'Back to child records':'Back to admin overview'}
       onBack={()=>{setTab(backTab);if(backTab==='overview')setContextChildId('')}}
+      onRoot={()=>{setBackTab('overview');setContextChildId('');setTab('overview')}}
+      onParent={backTab==='children'?()=>setTab('children'):undefined}
     />}
 
     {msg&&<div className="status-message admin-status">{msg}</div>}

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, Link2, MailPlus, ShieldCheck, Unlink, UserPlus } from 'lucide-react'
+import { CheckCircle2, Copy, ExternalLink, Link2, MailPlus, ShieldCheck, Unlink, UserPlus } from 'lucide-react'
 import { supabase } from './supabase'
 
 export type AdminMember = {
@@ -42,7 +42,7 @@ export default function AdminPeopleAccess({
 
   const [busy,setBusy]=useState(false)
   const [message,setMessage]=useState('')
-  const [inviteReceipt,setInviteReceipt]=useState<{name:string;email:string;invited:boolean}|null>(null)
+  const [inviteReceipt,setInviteReceipt]=useState<{name:string;email:string;invited:boolean;inviteLink?:string|null}|null>(null)
   const [currentUserId,setCurrentUserId]=useState('')
 
   const parents=useMemo(
@@ -137,6 +137,39 @@ export default function AdminPeopleAccess({
     setAssignChildId(current=>current&&roster.some(c=>c.id===current)?current:(roster[0]?.id||''))
   },[assignClassId,enrollments,children])
 
+  function inviteEmailBody(receipt:{name:string;email:string;inviteLink?:string|null}) {
+    return [
+      `Hello ${receipt.name},`,
+      '',
+      'You have been invited to ANTAR, the parent–institution communication and care portal.',
+      '',
+      'Open this secure link to accept the invitation and create your private password:',
+      receipt.inviteLink||'',
+      '',
+      `This link is intended for ${receipt.email}. Please do not forward it.`,
+      '',
+      '— ANTAR',
+    ].join('\n')
+  }
+
+  async function copyInviteLink(){
+    if(!inviteReceipt?.inviteLink)return
+    try{
+      await navigator.clipboard.writeText(inviteReceipt.inviteLink)
+      setMessage('Secure invitation link copied. Send it only to the intended person.')
+    }catch{
+      setMessage('Could not copy automatically. Open Gmail instead and the secure link will be prefilled.')
+    }
+  }
+
+  function openGmailInvite(){
+    if(!inviteReceipt?.inviteLink)return
+    const subject='You’re invited to ANTAR'
+    const body=inviteEmailBody(inviteReceipt)
+    const gmail=`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(inviteReceipt.email)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.open(gmail,'_blank','noopener,noreferrer')
+  }
+
   async function invite(e:FormEvent){
     e.preventDefault()
     if(!email.trim()){setMessage('Enter an email address.');return}
@@ -186,11 +219,12 @@ export default function AdminPeopleAccess({
       return
     }
 
-    const wasInvited=Boolean(data?.invited)
-    setInviteReceipt({name:submittedName,email:submittedEmail,invited:wasInvited})
-    setMessage(wasInvited
-      ? `Secure invitation sent to ${submittedName}.`
-      : `${submittedName} already has an ANTAR account. Their access has been updated; no duplicate account was created.`)
+    const inviteLink=data?.invite_link?String(data.invite_link):null
+    const linkReady=Boolean(inviteLink)
+    setInviteReceipt({name:submittedName,email:submittedEmail,invited:linkReady,inviteLink})
+    setMessage(linkReady
+      ? `Secure ANTAR invite created for ${submittedName}. Send it through Gmail or copy the link.`
+      : `${submittedName} already has an active ANTAR account. Their access has been updated; no new setup link is needed.`)
     setName('')
     setEmail('')
     setRole('parent')
@@ -267,7 +301,7 @@ export default function AdminPeopleAccess({
       <div className="panel-title">
         <div>
           <h2>Add Person & Give Access</h2>
-          <p>Enter an email, choose the correct role and grant ANTAR access. New users receive a secure email invitation to set their own password.</p>
+          <p>Enter an email, choose the correct role and grant ANTAR access. ANTAR now creates a secure setup link without relying on Brevo or SMTP.</p>
         </div>
         <span className="feature-icon"><UserPlus size={21}/></span>
       </div>
@@ -276,12 +310,17 @@ export default function AdminPeopleAccess({
 
       {inviteReceipt&&<div className={inviteReceipt.invited?'invite-receipt success':'invite-receipt'}>
         <CheckCircle2 size={22}/>
-        <div>
-          <strong>{inviteReceipt.invited?`Email sent to ${inviteReceipt.name}`:`Access updated for ${inviteReceipt.name}`}</strong>
+        <div className="invite-receipt-copy">
+          <strong>{inviteReceipt.invited?`Secure invite ready for ${inviteReceipt.name}`:`Access updated for ${inviteReceipt.name}`}</strong>
           <span>{inviteReceipt.email}</span>
           <small>{inviteReceipt.invited
-            ? 'They can open the latest ANTAR email, choose Accept invitation, create their password, and sign in.'
-            : 'This email already belongs to an ANTAR account, so a new invitation email was not sent.'}</small>
+            ? 'No SMTP provider is required. Send the secure link to this exact email address; they will open ANTAR, create their password, and sign in.'
+            : 'This person already has an active ANTAR account, so they can use their existing password.'}</small>
+          {inviteReceipt.inviteLink&&<div className="invite-delivery-actions">
+            <button type="button" className="primary-button" onClick={openGmailInvite}><ExternalLink size={15}/> Open Gmail Invite</button>
+            <button type="button" className="mini-button" onClick={()=>void copyInviteLink()}><Copy size={15}/> Copy Secure Link</button>
+          </div>}
+          {inviteReceipt.inviteLink&&<em className="invite-security-note">Send this link only to {inviteReceipt.email}. Treat it like a password-reset link.</em>}
         </div>
       </div>}
 
@@ -318,7 +357,7 @@ export default function AdminPeopleAccess({
         </>}
 
         <button className="primary-button" disabled={busy}>
-          <MailPlus size={16}/> {busy?'Working…':'Send Invite & Grant Access'}
+          <MailPlus size={16}/> {busy?'Working…':'Create Secure Invite & Grant Access'}
         </button>
       </form>
 
@@ -332,7 +371,7 @@ export default function AdminPeopleAccess({
 
       <div className="access-flow-note">
         <ShieldCheck size={17}/>
-        <span><strong>Secure flow:</strong> ANTAR creates or reuses the Supabase Auth account on the server, attaches it to this institution, and never exposes administrator credentials in the browser.</span>
+        <span><strong>Secure flow:</strong> ANTAR creates or reuses the Supabase Auth account on the server, grants only the selected role/child access, and generates a one-time Supabase setup link. Brevo and custom SMTP are no longer required.</span>
       </div>
     </div>
 

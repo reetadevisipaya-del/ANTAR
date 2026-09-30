@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, FileText, MessageCircle, Plus, School, Trash2, Users } from 'lucide-react'
+import { Bell, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, FileText, MessageCircle, Plus, School, Trash2, Users } from 'lucide-react'
 import { supabase } from './supabase'
 import { AdminSchedule, StaffSchedule } from './ScheduleSystem'
 import { StaffDocuments } from './DocumentSystem'
 import { StaffCare, TherapistStudents } from './CareSystem'
 import Messaging from './Messaging'
+import Notifications, { type NotificationDestination } from './Notifications'
 
 type StaffClass = {
   class_id: string
@@ -71,7 +72,7 @@ const label = (value?: string) =>
 
 export function StaffAttendancePortal({ userId, role }: { userId: string; role?: string }) {
   const isTherapist=role==='therapist'
-  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'messages' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
+  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'messages' | 'notifications' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
   const [selectedClass, setSelectedClass] = useState('')
@@ -89,6 +90,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+  const [notificationUnread,setNotificationUnread]=useState(0)
 
   async function loadClasses() {
     setLoading(true)
@@ -164,6 +166,17 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
   }
 
   useEffect(()=>{void loadClasses()},[userId])
+
+  useEffect(()=>{
+    let mounted=true
+    async function loadNotificationCount(){
+      const {data,error}=await supabase.rpc('notifications_unread_count')
+      if(mounted&&!error) setNotificationUnread(Number(data||0))
+    }
+    void loadNotificationCount()
+    const timer=window.setInterval(()=>void loadNotificationCount(),10000)
+    return ()=>{mounted=false;window.clearInterval(timer)}
+  },[userId])
 
   useEffect(()=>{
     if(!selectedClass) return
@@ -275,6 +288,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
       {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>}
       {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>}
       <button className={tab==='messages'?'active':''} onClick={()=>setTab('messages')}><MessageCircle size={17}/>Messages</button>
+      <button className={tab==='notifications'?'active':''} onClick={()=>setTab('notifications')}><Bell size={17}/>Notifications{notificationUnread>0&&<b className="nav-unread-badge">{notificationUnread>99?'99+':notificationUnread}</b>}</button>
       <button className={tab==='documents'?'active':''} onClick={()=>setTab('documents')}><FileText size={17}/>Documents</button>
       <button className={tab==='care'?'active':''} onClick={()=>setTab('care')}><CalendarDays size={17}/>Appointments & Therapy</button>
       {!isTherapist&&<button className={tab==='schedule'?'active':''} onClick={()=>setTab('schedule')}><CalendarDays size={17}/>Schedule</button>}
@@ -295,6 +309,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('report')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Daily Report</strong><small>Write a daily update for one student</small></span><span className="arrow">→</span></button>}
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>}
         <button className="feature-card" onClick={()=>setTab('messages')}><span className="feature-icon"><MessageCircle size={21}/></span><span><strong>Parent Messages</strong><small>Private child-specific conversations with linked parents</small></span><span className="arrow">→</span></button>
+        <button className="feature-card" onClick={()=>setTab('notifications')}><span className="feature-icon"><Bell size={21}/></span><span><strong>{notificationUnread} unread alert{notificationUnread===1?'':'s'}</strong><small>Messages and important ANTAR updates</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('documents')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Documents</strong><small>Upload secure student records</small></span><span className="arrow">→</span></button>
         <button className="feature-card" onClick={()=>setTab('care')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Appointments & Therapy</strong><small>Manage child care schedules and sessions</small></span><span className="arrow">→</span></button>
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('schedule')}><span className="feature-icon"><CalendarDays size={21}/></span><span><strong>Schedule</strong><small>Add class timetable and events</small></span><span className="arrow">→</span></button>}
@@ -358,6 +373,11 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
       </div>
     </div>:
     tab==='messages'?<Messaging userId={userId} mode="staff"/>:
+    tab==='notifications'?<Notifications userId={userId} onUnreadChange={setNotificationUnread} onNavigate={(destination:NotificationDestination)=>{
+      const target=destination==='appointments'?'care':destination==='reports'?'report':destination
+      if(isTherapist&&['attendance','homework','report','schedule'].includes(target)) setTab('home')
+      else setTab(target as typeof tab)
+    }}/>:
     tab==='documents'?<StaffDocuments/>:
     tab==='care'?<StaffCare/>:
     tab==='schedule'?<StaffSchedule classes={classes}/>:

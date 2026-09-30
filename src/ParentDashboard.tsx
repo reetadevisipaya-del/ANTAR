@@ -132,25 +132,25 @@ export default function ParentDashboard({
     <section className="parent-overview-grid">
       <button className="parent-overview-card" onClick={()=>onNavigate('attendance')}>
         <span className="parent-overview-icon"><ClipboardCheck size={20}/></span>
-        <div><small>Attendance</small><strong>{attendancePercent===null?'No records':\`\${attendancePercent}%\`}</strong><p>{latestAttendance?\`\${pretty(latestAttendance.status)} · \${dateLabel(latestAttendance.attendance_date)}\`:'No attendance recorded yet'}</p></div>
+        <div><small>Attendance</small><strong>{attendancePercent===null?'No records':`${attendancePercent}%`}</strong><p>{latestAttendance?`${pretty(latestAttendance.status)} · ${dateLabel(latestAttendance.attendance_date)}`:'No attendance recorded yet'}</p></div>
         <ChevronRight size={17}/>
       </button>
 
       <button className="parent-overview-card" onClick={()=>onNavigate('homework')}>
         <span className="parent-overview-icon"><BookOpen size={20}/></span>
-        <div><small>Today’s Homework</small><strong>{homework.length?\`\${homework.length} task\${homework.length===1?'':'s'}\`:'No homework'}</strong><p>{homework[0]?.title||'Nothing posted for today'}</p></div>
+        <div><small>Today’s Homework</small><strong>{homework.length?`${homework.length} task${homework.length===1?'':'s'}`:'No homework'}</strong><p>{homework[0]?.title||'Nothing posted for today'}</p></div>
         <ChevronRight size={17}/>
       </button>
 
       <button className="parent-overview-card" onClick={()=>onNavigate('appointments')}>
         <span className="parent-overview-icon"><CalendarDays size={20}/></span>
-        <div><small>Next Care Event</small><strong>{upcoming[0]?.kind||'Nothing scheduled'}</strong><p>{upcoming[0]?\`\${upcoming[0].title} · \${dateTimeLabel(upcoming[0].starts_at)}\`:'No upcoming therapy or appointment'}</p></div>
+        <div><small>Next Care Event</small><strong>{upcoming[0]?.kind||'Nothing scheduled'}</strong><p>{upcoming[0]?`${upcoming[0].title} · ${dateTimeLabel(upcoming[0].starts_at)}`:'No upcoming therapy or appointment'}</p></div>
         <ChevronRight size={17}/>
       </button>
 
       <button className="parent-overview-card" onClick={()=>onNavigate('notifications')}>
         <span className="parent-overview-icon"><Activity size={20}/></span>
-        <div><small>New Updates</small><strong>{unreadNotifications}</strong><p>{unreadNotifications===1?'1 unread ANTAR notification':\`\${unreadNotifications} unread ANTAR notifications\`}</p></div>
+        <div><small>New Updates</small><strong>{unreadNotifications}</strong><p>{unreadNotifications===1?'1 unread ANTAR notification':`${unreadNotifications} unread ANTAR notifications`}</p></div>
         <ChevronRight size={17}/>
       </button>
     </section>
@@ -176,9 +176,9 @@ export default function ParentDashboard({
           <button onClick={()=>onNavigate('appointments')}>View all</button>
         </div>
         <div className="parent-compact-list">
-          {upcoming.slice(0,3).map(item=><div className="parent-compact-row care" key={\`\${item.kind}-\${item.id}\`}>
+          {upcoming.slice(0,3).map(item=><div className="parent-compact-row care" key={`${item.kind}-${item.id}`}>
             <span className="parent-care-type">{item.kind}</span>
-            <div><strong>{item.title}</strong><p>{dateTimeLabel(item.starts_at)}{item.detail?\` · \${item.detail}\`:''}</p></div>
+            <div><strong>{item.title}</strong><p>{dateTimeLabel(item.starts_at)}{item.detail?` · ${item.detail}`:''}</p></div>
           </div>)}
           {!upcoming.length&&<div className="parent-empty-state"><CalendarDays size={22}/><span>No upcoming therapy sessions or appointments.</span></div>}
         </div>
@@ -208,7 +208,7 @@ export default function ParentDashboard({
             <span className="parent-staff-avatar"><UserRound size={17}/></span>
             <div><strong>{member.profiles?.full_name||'Staff member'}</strong><small>{pretty(member.assignment_type)}</small></div>
             <div className="parent-staff-actions">
-              {member.profiles?.phone&&<a href={\`tel:\${member.profiles.phone}\`} className="icon-action" aria-label="Call staff"><Phone size={15}/></a>}
+              {member.profiles?.phone&&<a href={`tel:${member.profiles.phone}`} className="icon-action" aria-label="Call staff"><Phone size={15}/></a>}
               <button className="icon-action" onClick={()=>onNavigate('messages')} aria-label="Send message"><MessageCircle size={15}/></button>
             </div>
           </div>)}

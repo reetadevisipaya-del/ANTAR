@@ -12,6 +12,7 @@ import { AdminDocuments } from './DocumentSystem'
 import { AdminCare } from './CareSystem'
 import AdminPeopleAccess, { type AdminMember } from './AdminPeopleAccess'
 import AdminChildRecords from './AdminChildRecords'
+import AdminStaffHub from './AdminStaffHub'
 import InAppNav from './InAppNav'
 
 const portalCopy:Record<Portal,{title:string;subtitle:string;icon:typeof Users}>={parent:{title:'Parent Portal',subtitle:'Stay connected to your child’s learning, care and support.',icon:HeartHandshake},staff:{title:'Staff Portal',subtitle:'For teachers, special educators and therapists.',icon:Stethoscope},admin:{title:'Institute Admin',subtitle:'Secure institute access for authorized administrators.',icon:ShieldCheck}}
@@ -150,7 +151,7 @@ type Child={id:string;first_name:string;last_name?:string;grade_or_program?:stri
 type PLink={id:string;parent_id:string;child_id:string;relationship?:string;status:string}
 type SLink={id:string;staff_id:string;child_id:string;assignment_type:string;active:boolean}
 function AdminWorkspace({institutionId}:{institutionId:string}){
-  type AdminTab='overview'|'people'|'children'|'classes'|'schedule'|'documents'|'care'|'assignments'
+  type AdminTab='overview'|'people'|'staff'|'children'|'classes'|'schedule'|'documents'|'care'|'assignments'
   const [tab,setTab]=useState<AdminTab>('overview')
   const [backTab,setBackTab]=useState<AdminTab>('overview')
   const [contextChildId,setContextChildId]=useState('')
@@ -208,24 +209,26 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
   const tabLabels:Record<AdminTab,string>={
     overview:'Admin Overview',
     people:'People & Access',
+    staff:'Staff & Caseloads',
     children:'Child Records',
     classes:'Classes & Students',
     schedule:'Schedule',
     documents:'Documents',
     care:'Appointments & Therapy',
-    assignments:'Assignments',
+    assignments:'Family Access',
   }
 
   return <div className="admin-workspace">
     <div className="dashboard-hero admin-hero">
       <span className="eyebrow">Institute Admin</span>
       <h1>Institute administration.</h1>
-      <p>People, child records, classes, care and access are separated into clear systems so each task has one obvious place.</p>
+      <p>Manage people, staff workloads, child records, classes, family access, care and secure records from one structured workspace.</p>
     </div>
 
     <div className="admin-tabs structured-tabs">
       <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('overview')}} className={tab==='overview'?'active':''}>Overview</button>
       <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('people')}} className={tab==='people'?'active':''}>People & Access</button>
+      <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('staff')}} className={tab==='staff'?'active':''}>Staff & Caseloads</button>
       <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('children')}} className={tab==='children'?'active':''}>Child Records</button>
       <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('classes')}} className={tab==='classes'?'active':''}>Classes & Students</button>
       <button onClick={()=>{setBackTab('overview');setContextChildId('');setTab('schedule')}} className={tab==='schedule'?'active':''}>Schedule</button>
@@ -236,12 +239,12 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
 
     {tab!=='overview'&&<InAppNav
       rootLabel="Admin Overview"
-      parentLabel={backTab==='children'?'Child Records':undefined}
+      parentLabel={backTab!=='overview'?tabLabels[backTab]:undefined}
       currentLabel={tabLabels[tab]}
-      backLabel={backTab==='children'?'Back to child records':'Back to admin overview'}
+      backLabel={backTab!=='overview'?`Back to ${tabLabels[backTab].toLowerCase()}`:'Back to admin overview'}
       onBack={()=>{setTab(backTab);if(backTab==='overview')setContextChildId('')}}
       onRoot={()=>{setBackTab('overview');setContextChildId('');setTab('overview')}}
-      onParent={backTab==='children'?()=>setTab('children'):undefined}
+      onParent={backTab!=='overview'?()=>setTab(backTab):undefined}
     />}
 
     {msg&&<div className="status-message admin-status">{msg}</div>}
@@ -258,13 +261,14 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
         <button className="admin-overview-card" onClick={()=>setTab('assignments')}>
           <HeartHandshake size={20}/><span><strong>{plinks.filter(x=>x.status==='active').length}</strong><small>Parent links</small></span><b>Open →</b>
         </button>
-        <button className="admin-overview-card" onClick={()=>setTab('assignments')}>
-          <Stethoscope size={20}/><span><strong>{slinks.filter(x=>x.active).length}</strong><small>Direct staff links</small></span><b>Open →</b>
+        <button className="admin-overview-card" onClick={()=>setTab('staff')}>
+          <Stethoscope size={20}/><span><strong>{members.filter(m=>['teacher','special_educator','therapist'].includes(m.role)&&m.status==='active').length}</strong><small>Active staff</small></span><b>Manage →</b>
         </button>
       </div>
       <div className="admin-module-grid">
         <button onClick={()=>setTab('children')}><UserRound size={21}/><span><strong>Child Records</strong><small>Identity, class, support, family, care team and record summary</small></span><span>→</span></button>
         <button onClick={()=>setTab('classes')}><School size={21}/><span><strong>Classes & Students</strong><small>Class structure, enrollment and class staff</small></span><span>→</span></button>
+        <button onClick={()=>setTab('staff')}><Stethoscope size={21}/><span><strong>Staff & Caseloads</strong><small>Teacher classes, special-educator access, therapist caseloads and student profiles</small></span><span>→</span></button>
         <button onClick={()=>setTab('people')}><ShieldCheck size={21}/><span><strong>People & Access</strong><small>Invite accounts and manage roles securely</small></span><span>→</span></button>
         <button onClick={()=>setTab('documents')}><FileText size={21}/><span><strong>Documents</strong><small>Secure child records and medical documents</small></span><span>→</span></button>
         <button onClick={()=>setTab('care')}><CalendarDays size={21}/><span><strong>Care Coordination</strong><small>Appointments, therapy and therapist assignment</small></span><span>→</span></button>
@@ -272,28 +276,31 @@ function AdminWorkspace({institutionId}:{institutionId:string}){
       </div>
     </div>:
     tab==='people'?<AdminPeopleAccess members={members} onRefresh={refresh}/>:
+    tab==='staff'?<AdminStaffHub
+      initialChildId={contextChildId||undefined}
+      onOpenChild={childId=>{setBackTab('staff');setContextChildId(childId);setTab('children')}}
+      onOpenPeople={()=>{setBackTab('staff');setTab('people')}}
+      onOpenClasses={()=>{setBackTab('staff');setTab('classes')}}
+    />:
     tab==='children'?<AdminChildRecords initialChildId={contextChildId||undefined} onNavigate={(destination,childId)=>{setBackTab('children');setContextChildId(childId||'');setTab(destination)}} onChanged={refresh}/>:
-    tab==='classes'?<AdminClassesStudents/>:
+    tab==='classes'?<AdminClassesStudents onOpenChild={childId=>{setBackTab('classes');setContextChildId(childId);setTab('children')}}/>:
     tab==='schedule'?<AdminSchedule/>:
     tab==='documents'?<AdminDocuments initialChildId={contextChildId||undefined}/>:
     tab==='care'?<AdminCare initialChildId={contextChildId||undefined}/>:
     <div className="panel assignment-workspace">
-      <div className="panel-title"><div><h2>Parent & Staff Assignments</h2><p>These relationships decide which child each parent or directly assigned staff member can access.</p></div></div>
+      <div className="panel-title"><div><h2>Family Access</h2><p>Manage which parent account is linked to each child. Staff access is managed separately in Staff & Caseloads.</p></div></div>
       <section className="assignment-section">
         <div className="assignment-section-head"><h3>Link parent to child</h3><p>Choose an active parent account and the child they are allowed to see.</p></div>
         <div className="assignment-grid">{parents.map(p=><AssignmentRow key={p.user_id} member={p} children={children} onAssign={id=>parentLink(p.user_id,id)}/>)}</div>
       </section>
       <section className="assignment-section">
-        <div className="assignment-section-head"><h3>Assign staff directly to child</h3><p>Use this for child-specific teacher, special educator or therapist access.</p></div>
-        <div className="assignment-grid">{staff.map(s=><AssignmentRow key={s.user_id} member={s} children={children} onAssign={id=>staffLink(s.user_id,id,s.role)}/>)}</div>
-      </section>
-      <section className="assignment-section">
-        <div className="assignment-section-head"><h3>Active relationships</h3><p>Deactivate an access relationship when it is no longer valid.</p></div>
+        <div className="assignment-section-head"><h3>Active parent relationships</h3><p>Deactivate a family access relationship when it is no longer valid.</p></div>
         <div className="cards-list">
           {plinks.filter(x=>x.status==='active').map(x=><Relation key={x.id} text={`${members.find(m=>m.user_id===x.parent_id)?.profiles?.full_name||'Parent'} → ${children.find(c=>c.id===x.child_id)?.first_name||'Child'}`} onOff={async()=>{await supabase.from('parent_child_links').update({status:'revoked'}).eq('id',x.id);await refresh()}}/>)}
-          {slinks.filter(x=>x.active).map(x=><Relation key={x.id} text={`${members.find(m=>m.user_id===x.staff_id)?.profiles?.full_name||'Staff'} (${roleLabel(x.assignment_type)}) → ${children.find(c=>c.id===x.child_id)?.first_name||'Child'}`} onOff={async()=>{await supabase.from('staff_child_assignments').update({active:false}).eq('id',x.id);await refresh()}}/>)}
+          {!plinks.some(x=>x.status==='active')&&<p className="helper">No active parent-child access links.</p>}
         </div>
       </section>
+      <div className="access-flow-note"><Stethoscope size={17}/><span>Teacher, special educator and therapist assignments now live in <strong>Staff & Caseloads</strong> to avoid duplicate access controls.</span></div>
     </div>}
   </div>
 }

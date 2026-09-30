@@ -248,11 +248,22 @@ export default function AdminChildRecords({
           <button className="mini-button" onClick={()=>startEdit(selected)}><Pencil size={14}/> Edit Core Record</button>
         </div>
 
-        <div className="child-record-summary-grid">
+        <div className="child-record-summary-grid admin-child-summary">
           <div className="child-record-summary-card"><UserRound size={18}/><span><small>Date of birth</small><strong>{dateLabel(selected.date_of_birth)}</strong></span></div>
           <div className="child-record-summary-card"><BookOpen size={18}/><span><small>Class</small><strong>{selected.class_name||'Not enrolled'}</strong></span></div>
           <div className="child-record-summary-card"><Users size={18}/><span><small>Section</small><strong>{selected.class_section||'—'}</strong></span></div>
           <div className="child-record-summary-card"><HeartPulse size={18}/><span><small>Blood group</small><strong>{selected.blood_group||'Not added'}</strong></span></div>
+          <div className="child-record-summary-card"><UserRound size={18}/><span><small>Parent Access</small><strong>{selected.parents.length} linked</strong></span></div>
+          <div className="child-record-summary-card"><Stethoscope size={18}/><span><small>Care Team</small><strong>{selected.staff.length} assigned</strong></span></div>
+        </div>
+
+        <div className="panel child-record-admin-actions">
+          <div><strong>Quick Management</strong><small>Open the exact system for this child without searching again.</small></div>
+          <button onClick={()=>onNavigate('classes',selected.child_id)}><BookOpen size={15}/> Class</button>
+          <button onClick={()=>onNavigate('assignments',selected.child_id)}><Users size={15}/> Family Access</button>
+          <button onClick={()=>onNavigate('staff',selected.child_id)}><Stethoscope size={15}/> Staff & Caseloads</button>
+          <button onClick={()=>onNavigate('documents',selected.child_id)}><FileText size={15}/> Records</button>
+          <button onClick={()=>onNavigate('care',selected.child_id)}><CalendarDays size={15}/> Care</button>
         </div>
 
         <div className="child-record-section-grid">

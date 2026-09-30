@@ -65,7 +65,7 @@ function ResetPassword(){
         setStatus('Invitation verified. Create your private ANTAR password below.')
       }else{
         setReady(false)
-        setStatus('This invitation link is invalid or has expired. Ask your institute admin to send a fresh setup email.')
+        setStatus('This invitation link is invalid or has expired. Ask your institute admin to create a fresh secure setup link.')
       }
     }).catch(error=>{
       if(!mounted)return
@@ -101,7 +101,7 @@ function ResetPassword(){
       }
 
       if(!session?.user){
-        throw new Error('Your secure setup session could not be restored. Please open the latest invitation email again.')
+        throw new Error('Your secure setup session could not be restored. Please open the latest secure invitation link again.')
       }
 
       const {error}=await supabase.auth.updateUser({password})

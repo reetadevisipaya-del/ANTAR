@@ -113,7 +113,7 @@ function ResetPassword(){
       window.history.replaceState({},'',clean.pathname)
 
       setStatus('Password saved. Signing you in to ANTAR…')
-      setTimeout(()=>n('/app',{replace:true}),700)
+      setTimeout(()=>n('/app?welcome=1',{replace:true}),700)
     }catch(error){
       setStatus(error instanceof Error?error.message:'Unable to save your password.')
       setBusy(false)
@@ -555,5 +555,25 @@ function StaffPortal({userId}:{userId:string}){
   </div>
 }
 
-function ProtectedApp(){const {user,membership,loading,signOut}=useAuth();const loc=useLocation();if(loading)return <Shell><div className="loading-screen">Loading ANTAR…</div></Shell>;if(!user||!membership)return <Navigate to="/" replace state={{from:loc}}/>;const institutionName=membership.institutions?.name??'Your institution',role=membership.role;return <Shell><section className="dashboard-shell"><header className="dashboard-header"><Brand/><div className="header-actions"><div className="account-chip"><small>{institutionName}</small><strong>{roleLabel(role)}</strong></div><button className="secondary-button" onClick={()=>void signOut()}><LogOut size={17}/> Logout</button></div></header><div className="dashboard-content">{role==='institute_admin'?<AdminWorkspace institutionId={membership.institution_id}/>:role==='parent'?<ParentPortal userId={user.id}/>:<StaffAttendancePortal userId={user.id} role={role}/>}<div className="identity-strip"><ShieldCheck size={18}/><span>Protected session</span><span>{user.email}</span><span>{institutionName}</span></div></div></section></Shell>}
+function ProtectedApp(){
+  const {user,membership,loading,signOut}=useAuth()
+  const loc=useLocation()
+  if(loading)return <Shell><div className="loading-screen">Loading ANTAR…</div></Shell>
+  if(!user||!membership)return <Navigate to="/" replace state={{from:loc}}/>
+  const institutionName=membership.institutions?.name??'Your institution'
+  const role=membership.role
+  const welcome=new URLSearchParams(loc.search).get('welcome')==='1'
+  const staffInitialTab=welcome?(role==='therapist'?'students':'classes'):undefined
+  return <Shell><section className="dashboard-shell">
+    <header className="dashboard-header"><Brand/><div className="header-actions"><div className="account-chip"><small>{institutionName}</small><strong>{roleLabel(role)}</strong></div><button className="secondary-button" onClick={()=>void signOut()}><LogOut size={17}/> Logout</button></div></header>
+    <div className="dashboard-content">
+      {role==='institute_admin'
+        ?<AdminWorkspace institutionId={membership.institution_id}/>
+        :role==='parent'
+          ?<ParentPortal userId={user.id}/>
+          :<StaffAttendancePortal userId={user.id} role={role} initialTab={staffInitialTab} welcome={welcome}/>}
+      <div className="identity-strip"><ShieldCheck size={18}/><span>Protected session</span><span>{user.email}</span><span>{institutionName}</span></div>
+    </div>
+  </section></Shell>
+}
 export default function App(){const loc=useLocation();const query=new URLSearchParams(loc.search);const hash=new URLSearchParams(window.location.hash.replace(/^#/,''));const authType=hash.get('type');const isInviteFlow=query.get('invite')==='1'||query.get('reset')==='1'||authType==='invite'||authType==='recovery'||query.has('code');if(loc.pathname==='/'&&isInviteFlow)return <ResetPassword/>;return <Routes><Route path="/" element={<Landing/>}/><Route path="/login/:portal" element={<Login/>}/><Route path="/reset-password" element={<ResetPassword/>}/><Route path="/app" element={<ProtectedApp/>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes>}

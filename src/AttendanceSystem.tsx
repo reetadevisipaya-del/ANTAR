@@ -72,9 +72,19 @@ type AdminRosterRow = {
 const label = (value?: string) =>
   value ? value.replaceAll('_', ' ').replace(/\b\w/g, c => c.toUpperCase()) : ''
 
-export function StaffAttendancePortal({ userId, role }: { userId: string; role?: string }) {
+export function StaffAttendancePortal({
+  userId,
+  role,
+  initialTab,
+  welcome=false,
+}:{
+  userId:string
+  role?:string
+  initialTab?:'home'|'classes'|'students'
+  welcome?:boolean
+}) {
   const isTherapist=role==='therapist'
-  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'student' | 'report' | 'homework' | 'messages' | 'notifications' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
+  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'student' | 'report' | 'homework' | 'messages' | 'notifications' | 'documents' | 'care' | 'schedule' | 'attendance'>(initialTab||'home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
   const [selectedClass, setSelectedClass] = useState('')
@@ -364,16 +374,21 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
       </div>
     </>:
     tab==='classes'?<div className="panel">
-      <div className="panel-title"><div><h2>My Classes</h2><p>Only classes assigned to your logged-in Teacher account appear here.</p></div></div>
+      {welcome&&<div className="first-login-banner">
+        <span className="feature-icon"><CheckCircle2 size={20}/></span>
+        <div><strong>Password saved — your ANTAR account is ready.</strong><p>Choose one of your assigned classes to continue. You will then see the students in that class.</p></div>
+      </div>}
+      <div className="panel-title"><div><h2>{welcome?'Select your class':'My Classes'}</h2><p>Only classes assigned to your logged-in Teacher account appear here.</p></div></div>
       <div className="feature-grid">
-        {classes.map(c=><button key={c.class_id} className="feature-card" onClick={()=>void openClass(c.class_id)}>
+        {classes.map(c=><button key={c.class_id} className="feature-card class-choice-card" onClick={()=>void openClass(c.class_id)}>
           <span className="feature-icon"><School size={21}/></span>
           <span><strong>{c.name}{c.section?` — Section ${c.section}`:''}</strong><small>{c.student_count} student{c.student_count===1?'':'s'} · {c.academic_year||'Academic year'}</small></span>
-          <span className="arrow">→</span>
+          <span className="arrow">Select →</span>
         </button>)}
       </div>
+      {!classes.length&&<div className="first-login-empty"><School size={24}/><strong>No class has been assigned to this account yet.</strong><p>Ask the institute administrator to assign at least one class in Admin → Classes & Students. It will appear here automatically.</p></div>}
     </div>:
-    tab==='students'?(isTherapist?<TherapistStudents/>:<div className="panel">
+    tab==='students'?(isTherapist?<div className="first-login-stack">{welcome&&<div className="first-login-banner"><span className="feature-icon"><CheckCircle2 size={20}/></span><div><strong>Password saved — your ANTAR account is ready.</strong><p>Open one of your assigned students to continue.</p></div></div>}<TherapistStudents/></div>:<div className="panel">
       <div className="panel-title"><div><h2>Students</h2><p>Students enrolled in the classes assigned to you.</p></div></div>
       <div className="cards-list">
         {allStudents.map(student=><div className="person-row" key={student.child_id}><div><strong>{student.first_name} {student.last_name}</strong><small>{student.grade_or_program||'Class not set'}{student.section?` · Section ${student.section}`:''}{student.student_identifier?` · ${student.student_identifier}`:''}</small></div><button className="mini-button" onClick={()=>{const matching=classes.find(cls=>(rosters[cls.class_id]||[]).some(s=>s.child_id===student.child_id));if(matching)setSelectedClass(matching.class_id);setSelectedStudent(student.child_id);setTab('student')}}>Open Dashboard</button></div>)}

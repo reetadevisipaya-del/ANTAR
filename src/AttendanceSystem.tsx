@@ -6,6 +6,7 @@ import { StaffDocuments } from './DocumentSystem'
 import { StaffCare, TherapistStudents } from './CareSystem'
 import Messaging from './Messaging'
 import Notifications, { type NotificationDestination } from './Notifications'
+import StaffStudentDashboard from './StaffStudentDashboard'
 
 type StaffClass = {
   class_id: string
@@ -72,7 +73,7 @@ const label = (value?: string) =>
 
 export function StaffAttendancePortal({ userId, role }: { userId: string; role?: string }) {
   const isTherapist=role==='therapist'
-  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'report' | 'homework' | 'messages' | 'notifications' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
+  const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'student' | 'report' | 'homework' | 'messages' | 'notifications' | 'documents' | 'care' | 'schedule' | 'attendance'>('home')
   const [classes, setClasses] = useState<StaffClass[]>([])
   const [rosters, setRosters] = useState<Record<string, Student[]>>({})
   const [selectedClass, setSelectedClass] = useState('')
@@ -91,6 +92,7 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
   const [notificationUnread,setNotificationUnread]=useState(0)
+  const [messageChildId,setMessageChildId]=useState('')
 
   async function loadClasses() {
     setLoading(true)
@@ -109,14 +111,15 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
   }
 
   async function loadRoster(classId:string) {
-    if(!classId) return
+    if(!classId) return [] as Student[]
     const {data,error}=await supabase.rpc('staff_class_roster',{p_class_id:classId})
-    if(error){setMessage(error.message);return}
+    if(error){setMessage(error.message);return [] as Student[]}
     const next=(data||[]) as Student[]
     setRosters(prev=>({...prev,[classId]:next}))
     if(classId===selectedClass){
       setSelectedStudent(current=>current&&next.some(s=>s.child_id===current)?current:(next[0]?.child_id||''))
     }
+    return next
   }
 
   async function loadAttendance(classId:string, attendanceDate:string) {
@@ -196,8 +199,9 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
 
   async function openClass(classId:string){
     setSelectedClass(classId)
-    if(!rosters[classId]) await loadRoster(classId)
-    setTab('attendance')
+    const next=rosters[classId]||await loadRoster(classId)
+    setSelectedStudent(next[0]?.child_id||'')
+    setTab('student')
   }
 
   async function saveAttendance(){
@@ -285,9 +289,10 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
       <button className={tab==='home'?'active':''} onClick={()=>setTab('home')}><School size={17}/>Home</button>
       {!isTherapist&&<button className={tab==='classes'?'active':''} onClick={()=>setTab('classes')}><BookOpen size={17}/>My Classes</button>}
       <button className={tab==='students'?'active':''} onClick={()=>setTab('students')}><Users size={17}/>{isTherapist?'My Students':'Students'}</button>
+      {!isTherapist&&<button className={tab==='student'?'active':''} onClick={()=>setTab('student')}><Users size={17}/>Student Overview</button>}
       {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>setTab('report')}><FileText size={17}/>Daily Report</button>}
       {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>setTab('homework')}><BookOpen size={17}/>Homework</button>}
-      <button className={tab==='messages'?'active':''} onClick={()=>setTab('messages')}><MessageCircle size={17}/>Messages</button>
+      <button className={tab==='messages'?'active':''} onClick={()=>{setMessageChildId('');setTab('messages')}}><MessageCircle size={17}/>Messages</button>
       <button className={tab==='notifications'?'active':''} onClick={()=>setTab('notifications')}><Bell size={17}/>Notifications{notificationUnread>0&&<b className="nav-unread-badge">{notificationUnread>99?'99+':notificationUnread}</b>}</button>
       <button className={tab==='documents'?'active':''} onClick={()=>setTab('documents')}><FileText size={17}/>Documents</button>
       <button className={tab==='care'?'active':''} onClick={()=>setTab('care')}><CalendarDays size={17}/>Appointments & Therapy</button>
@@ -305,7 +310,8 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
         <p>{isTherapist?'View your assigned students by class, schedule appointments, record therapy sessions and share parent-facing updates.':'Manage attendance, individual daily reports, and a class-wide homework board.'}</p>
       </div>
       <div className="feature-grid">
-        {isTherapist?<button className="feature-card" onClick={()=>setTab('students')}><span className="feature-icon"><Users size={21}/></span><span><strong>My Students</strong><small>Assigned therapy students with class details</small></span><span className="arrow">→</span></button>:<button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><School size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Classes assigned by the institute</small></span><span className="arrow">→</span></button>}
+        {isTherapist?<button className="feature-card" onClick={()=>setTab('students')}><span className="feature-icon"><Users size={21}/></span><span><strong>My Students</strong><small>Assigned therapy students with class details</small></span><span className="arrow">→</span></button>:<button className="feature-card" onClick={()=>setTab('classes')}><span className="feature-icon"><School size={21}/></span><span><strong>{classes.length} assigned classes</strong><small>Select a class, then open a student dashboard</small></span><span className="arrow">→</span></button>}
+        {!isTherapist&&<button className="feature-card" onClick={()=>setTab('student')}><span className="feature-icon"><Users size={21}/></span><span><strong>Student Overview</strong><small>Class → student → complete school and care summary</small></span><span className="arrow">→</span></button>}
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('report')}><span className="feature-icon"><FileText size={21}/></span><span><strong>Daily Report</strong><small>Write a daily update for one student</small></span><span className="arrow">→</span></button>}
         {!isTherapist&&<button className="feature-card" onClick={()=>setTab('homework')}><span className="feature-icon"><BookOpen size={21}/></span><span><strong>Daily Homework</strong><small>Add homework for the whole class</small></span><span className="arrow">→</span></button>}
         <button className="feature-card" onClick={()=>setTab('messages')}><span className="feature-icon"><MessageCircle size={21}/></span><span><strong>Parent Messages</strong><small>Private child-specific conversations with linked parents</small></span><span className="arrow">→</span></button>
@@ -329,10 +335,23 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
     tab==='students'?(isTherapist?<TherapistStudents/>:<div className="panel">
       <div className="panel-title"><div><h2>Students</h2><p>Students enrolled in the classes assigned to you.</p></div></div>
       <div className="cards-list">
-        {allStudents.map(student=><div className="person-row" key={student.child_id}><div><strong>{student.first_name} {student.last_name}</strong><small>{student.grade_or_program||'Class not set'}{student.section?` · Section ${student.section}`:''}</small></div><span className="badge active">Student</span></div>)}
+        {allStudents.map(student=><div className="person-row" key={student.child_id}><div><strong>{student.first_name} {student.last_name}</strong><small>{student.grade_or_program||'Class not set'}{student.section?` · Section ${student.section}`:''}{student.student_identifier?` · ${student.student_identifier}`:''}</small></div><button className="mini-button" onClick={()=>{const matching=classes.find(cls=>(rosters[cls.class_id]||[]).some(s=>s.child_id===student.child_id));if(matching)setSelectedClass(matching.class_id);setSelectedStudent(student.child_id);setTab('student')}}>Open Dashboard</button></div>)}
         {!allStudents.length&&<p>Open My Classes first to load class rosters.</p>}
       </div>
     </div>):
+    tab==='student'?<div className="student-overview-workspace">
+      <div className="panel student-overview-selector">
+        <div className="panel-title"><div><h2>Student Overview</h2><p>Select a class and student. ANTAR brings their school, care, records and parent communication into one workspace.</p></div></div>
+        <div className="attendance-toolbar">
+          <label>Class<select value={selectedClass} onChange={e=>setSelectedClass(e.target.value)}>{classes.map(c=><option key={c.class_id} value={c.class_id}>{c.name}{c.section?` — Section ${c.section}`:''}</option>)}</select></label>
+          <label>Student<select value={selectedStudent} onChange={e=>setSelectedStudent(e.target.value)}>{roster.map(s=><option key={s.child_id} value={s.child_id}>{s.first_name} {s.last_name}{s.student_identifier?` · ${s.student_identifier}`:''}</option>)}</select></label>
+        </div>
+      </div>
+      {selectedStudent?<StaffStudentDashboard childId={selectedStudent} onAction={action=>{
+        if(action==='messages'){setMessageChildId(selectedStudent);setTab('messages');return}
+        setTab(action)
+      }}/>:<div className="panel">No student is available in this class.</div>}
+    </div>:
     tab==='report'?<div className="panel">
       <div className="panel-title"><div><h2>Daily School Report</h2><p>Select a class and student. One report is saved per student per day and can be updated during the day.</p></div></div>
       <div className="attendance-toolbar">
@@ -372,14 +391,14 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
         {!homework.length&&<p className="helper">No homework posted for this class on this date.</p>}
       </div>
     </div>:
-    tab==='messages'?<Messaging userId={userId} mode="staff"/>:
+    tab==='messages'?<Messaging userId={userId} childId={messageChildId||undefined} mode="staff"/>:
     tab==='notifications'?<Notifications userId={userId} onUnreadChange={setNotificationUnread} onNavigate={(destination:NotificationDestination)=>{
       const target=destination==='appointments'?'care':destination==='reports'?'report':destination
       if(isTherapist&&['attendance','homework','report','schedule'].includes(target)) setTab('home')
       else setTab(target as typeof tab)
     }}/>:
-    tab==='documents'?<StaffDocuments/>:
-    tab==='care'?<StaffCare/>:
+    tab==='documents'?<StaffDocuments initialChildId={selectedStudent||undefined}/>:
+    tab==='care'?<StaffCare initialChildId={selectedStudent||undefined}/>:
     tab==='schedule'?<StaffSchedule classes={classes}/>:
     <div className="panel">
       <div className="panel-title"><div><h2>Attendance</h2><p>Choose a class and date, mark Present or Absent, then save.</p></div></div>

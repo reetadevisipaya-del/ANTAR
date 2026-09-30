@@ -257,8 +257,8 @@ export function StaffDocuments({initialChildId}:{initialChildId?:string}={}){
   return <DocumentsManager mode="staff" initialChildId={initialChildId}/>
 }
 
-export function AdminDocuments(){
-  return <DocumentsManager mode="admin"/>
+export function AdminDocuments({initialChildId}:{initialChildId?:string}={}){
+  return <DocumentsManager mode="admin" initialChildId={initialChildId}/>
 }
 
 export function ParentDocuments({childId}:{childId:string}){

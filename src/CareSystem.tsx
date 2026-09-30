@@ -65,10 +65,10 @@ function localIso(date:string,time:string){
   return new Date(`${date}T${time}:00`).toISOString()
 }
 
-function CareManager({mode}:{mode:'staff'|'admin'}){
+function CareManager({mode,initialChildId}:{mode:'staff'|'admin';initialChildId?:string}){
   const [tab,setTab]=useState<'appointments'|'therapy'>('appointments')
   const [children,setChildren]=useState<ChildOption[]>([])
-  const [childId,setChildId]=useState('')
+  const [childId,setChildId]=useState(initialChildId||'')
   const [appointments,setAppointments]=useState<Appointment[]>([])
   const [therapy,setTherapy]=useState<Therapy[]>([])
   const [therapists,setTherapists]=useState<Therapist[]>([])
@@ -102,7 +102,7 @@ function CareManager({mode}:{mode:'staff'|'admin'}){
     if(error){setMessage(error.message);setLoading(false);return}
     const next=((data||[]) as ChildOption[]).map(c=>({...c,can_manage_therapy:mode==='admin'?true:Boolean(c.can_manage_therapy)}))
     setChildren(next)
-    setChildId(current=>current&&next.some(c=>c.child_id===current)?current:(next[0]?.child_id||''))
+    setChildId(current=>current&&next.some(c=>c.child_id===current)?current:(initialChildId&&next.some(c=>c.child_id===initialChildId)?initialChildId:(next[0]?.child_id||'')))
     setLoading(false)
   }
 
@@ -124,7 +124,8 @@ function CareManager({mode}:{mode:'staff'|'admin'}){
     setTherapistId(current=>current&&nextTherapists.some(x=>x.therapist_id===current)?current:(nextTherapists[0]?.therapist_id||''))
   }
 
-  useEffect(()=>{void loadChildren()},[mode])
+  useEffect(()=>{void loadChildren()},[mode,initialChildId])
+  useEffect(()=>{if(initialChildId&&children.some(c=>c.child_id===initialChildId))setChildId(initialChildId)},[initialChildId,children])
   useEffect(()=>{void loadCare()},[childId])
 
   const selectedChild=children.find(c=>c.child_id===childId)
@@ -474,10 +475,10 @@ export function TherapistStudents(){
   return <TherapistRosterPanel/>
 }
 
-export function StaffCare(){
+export function StaffCare({initialChildId}:{initialChildId?:string}={}){
   return <div className="care-workspace">
     <TherapistRosterPanel/>
-    <CareManager mode="staff"/>
+    <CareManager mode="staff" initialChildId={initialChildId}/>
   </div>
 }
 

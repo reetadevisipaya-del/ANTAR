@@ -46,7 +46,7 @@ type AssignmentRow={
 
 const label=(value?:string|null)=>value?value.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):''
 
-export default function AdminClassesStudents(){
+export default function AdminClassesStudents({onOpenChild}:{onOpenChild?:(childId:string)=>void}={}){
   const [classes,setClasses]=useState<ClassRow[]>([])
   const [children,setChildren]=useState<ChildRow[]>([])
   const [rosters,setRosters]=useState<Record<string,RosterRow[]>>({})
@@ -263,6 +263,7 @@ export default function AdminClassesStudents(){
                 <small>{student.student_identifier||'Student ID not set'} · {selectedClass.class_name}{selectedClass.section?` ${selectedClass.section}`:''}</small>
               </div>
               <span className="badge active">Enrolled</span>
+              {onOpenChild&&<button className="mini-button" onClick={()=>onOpenChild(student.child_id)}>Open Profile</button>}
               <button className="mini-button danger" disabled={busy} onClick={()=>void removeFromClass(student.child_id)}><Trash2 size={14}/> Remove</button>
             </div>)}
             {!selectedRoster.length&&<div className="cs-empty-roster"><GraduationCap size={28}/><strong>No students enrolled yet</strong><span>Use “Enroll or move a student” above to build this class roster.</span></div>}

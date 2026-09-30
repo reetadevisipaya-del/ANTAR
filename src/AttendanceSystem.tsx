@@ -337,6 +337,8 @@ export function StaffAttendancePortal({ userId, role }: { userId: string; role?:
       currentLabel={tabLabel}
       backLabel={tab==='student'&&!isTherapist?'Back to my classes':returnToStudent&&selectedStudent&&!isTherapist?'Back to student overview':'Back to staff home'}
       onBack={goBackInStaffPortal}
+      onRoot={()=>{setReturnToStudent(false);setMessageChildId('');setTab('home')}}
+      onParent={returnToStudent&&selectedStudent&&!isTherapist?()=>{setReturnToStudent(false);setTab('student')}:undefined}
     />}
 
     {message&&<div className="status-message admin-status">{message}</div>}

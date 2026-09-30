@@ -72,9 +72,9 @@ async function downloadDocument(path:string,fileName:string){
   URL.revokeObjectURL(url)
 }
 
-function DocumentsManager({mode}:{mode:'staff'|'admin'}){
+function DocumentsManager({mode,initialChildId}:{mode:'staff'|'admin';initialChildId?:string}){
   const [children,setChildren]=useState<ChildOption[]>([])
-  const [childId,setChildId]=useState('')
+  const [childId,setChildId]=useState(initialChildId||'')
   const [documents,setDocuments]=useState<DocumentRow[]>([])
   const [type,setType]=useState('medical')
   const [title,setTitle]=useState('')
@@ -93,7 +93,7 @@ function DocumentsManager({mode}:{mode:'staff'|'admin'}){
     if(error){setMessage(error.message);setLoading(false);return}
     const next=(data||[]) as ChildOption[]
     setChildren(next)
-    setChildId(current=>current&&next.some(c=>c.child_id===current)?current:(next[0]?.child_id||''))
+    setChildId(current=>current&&next.some(c=>c.child_id===current)?current:(initialChildId&&next.some(c=>c.child_id===initialChildId)?initialChildId:(next[0]?.child_id||'')))
     setLoading(false)
   }
 
@@ -109,7 +109,8 @@ function DocumentsManager({mode}:{mode:'staff'|'admin'}){
     setDocuments((data||[]) as DocumentRow[])
   }
 
-  useEffect(()=>{void loadChildren()},[mode])
+  useEffect(()=>{void loadChildren()},[mode,initialChildId])
+  useEffect(()=>{if(initialChildId&&children.some(c=>c.child_id===initialChildId))setChildId(initialChildId)},[initialChildId,children])
   useEffect(()=>{void loadDocuments()},[childId])
 
   async function upload(){
@@ -252,8 +253,8 @@ function DocumentsManager({mode}:{mode:'staff'|'admin'}){
   </div>
 }
 
-export function StaffDocuments(){
-  return <DocumentsManager mode="staff"/>
+export function StaffDocuments({initialChildId}:{initialChildId?:string}={}){
+  return <DocumentsManager mode="staff" initialChildId={initialChildId}/>
 }
 
 export function AdminDocuments(){

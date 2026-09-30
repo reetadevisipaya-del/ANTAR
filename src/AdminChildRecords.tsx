@@ -72,12 +72,14 @@ const blankForm={
 export default function AdminChildRecords({
   onNavigate,
   onChanged,
+  initialChildId,
 }:{
   onNavigate:(destination:AdminDestination,childId?:string)=>void
   onChanged?:()=>void
+  initialChildId?:string
 }){
   const [rows,setRows]=useState<ChildRecord[]>([])
-  const [selectedId,setSelectedId]=useState('')
+  const [selectedId,setSelectedId]=useState(initialChildId||'')
   const [query,setQuery]=useState('')
   const [showInactive,setShowInactive]=useState(false)
   const [editing,setEditing]=useState(false)
@@ -113,7 +115,7 @@ export default function AdminChildRecords({
     setLoading(false)
   }
 
-  useEffect(()=>{void load()},[])
+  useEffect(()=>{void load(initialChildId)},[initialChildId])
 
   const filtered=useMemo(()=>{
     const q=query.trim().toLowerCase()

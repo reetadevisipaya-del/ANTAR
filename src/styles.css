@@ -61,3 +61,7 @@
 
 /* Provider-independent invite delivery */
 .invite-receipt-copy{display:grid;gap:5px;min-width:0}.invite-delivery-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.invite-delivery-actions .primary-button,.invite-delivery-actions .mini-button{min-height:38px}.invite-security-note{display:block;margin-top:4px;padding:8px 10px;border-radius:10px;background:#f7fafb;color:#6f838f;font-size:10px;font-style:normal;line-height:1.45}@media(max-width:620px){.invite-delivery-actions{display:grid}.invite-delivery-actions .primary-button,.invite-delivery-actions .mini-button{width:100%;justify-content:center}}
+
+
+/* First-login onboarding */
+.first-login-stack{display:grid;gap:14px}.first-login-banner{display:flex;align-items:flex-start;gap:11px;margin-bottom:14px;padding:14px 15px;border:1px solid #cfe1ea;border-radius:14px;background:#f4f9fb}.first-login-banner .feature-icon{flex:0 0 auto}.first-login-banner strong{display:block;color:#21475f;font-size:13px}.first-login-banner p{margin:4px 0 0;color:#718894;font-size:11px;line-height:1.45}.first-login-empty{display:grid;justify-items:center;gap:7px;padding:30px 20px;text-align:center;border:1px dashed #d8e5eb;border-radius:14px;background:#fbfdfe;color:#7d909c}.first-login-empty strong{color:#31566f}.first-login-empty p{margin:0;max-width:520px;font-size:11px;line-height:1.5}.class-choice-card .arrow{font-weight:800;color:#315f7f}@media(max-width:620px){.first-login-banner{padding:12px}.class-choice-card .arrow{font-size:10px}}

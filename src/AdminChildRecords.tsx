@@ -73,7 +73,7 @@ export default function AdminChildRecords({
   onNavigate,
   onChanged,
 }:{
-  onNavigate:(destination:AdminDestination)=>void
+  onNavigate:(destination:AdminDestination,childId?:string)=>void
   onChanged?:()=>void
 }){
   const [rows,setRows]=useState<ChildRecord[]>([])
@@ -255,7 +255,7 @@ export default function AdminChildRecords({
 
         <div className="child-record-section-grid">
           <article className="panel child-record-section">
-            <div className="child-record-section-head"><div><BookOpen size={17}/><span><strong>Education & Enrollment</strong><small>Canonical class placement</small></span></div><button onClick={()=>onNavigate('classes')}>Manage</button></div>
+            <div className="child-record-section-head"><div><BookOpen size={17}/><span><strong>Education & Enrollment</strong><small>Canonical class placement</small></span></div><button onClick={()=>onNavigate('classes',selected.child_id)}>Manage</button></div>
             <dl className="structured-dl">
               <div><dt>Class / Programme</dt><dd>{selected.class_name||'Not enrolled'}</dd></div>
               <div><dt>Section</dt><dd>{selected.class_section||'—'}</dd></div>
@@ -274,7 +274,7 @@ export default function AdminChildRecords({
           </article>
 
           <article className="panel child-record-section">
-            <div className="child-record-section-head"><div><Users size={17}/><span><strong>Parent / Family Access</strong><small>Who can see this child in Parent Portal</small></span></div><button onClick={()=>onNavigate('assignments')}>Manage</button></div>
+            <div className="child-record-section-head"><div><Users size={17}/><span><strong>Parent / Family Access</strong><small>Who can see this child in Parent Portal</small></span></div><button onClick={()=>onNavigate('assignments',selected.child_id)}>Manage</button></div>
             <div className="structured-people-list">
               {selected.parents.map((person,index)=><div key={person.email||index}><span className="structured-person-icon"><UserRound size={15}/></span><span><strong>{person.name||person.email}</strong><small>{person.relationship||'Parent'} · {person.email}</small>{person.phone&&<em>{person.phone}</em>}</span></div>)}
               {!selected.parents.length&&<p className="helper">No active parent access link.</p>}
@@ -282,7 +282,7 @@ export default function AdminChildRecords({
           </article>
 
           <article className="panel child-record-section">
-            <div className="child-record-section-head"><div><Stethoscope size={17}/><span><strong>Assigned Care Team</strong><small>Teachers, special educators and therapists</small></span></div><button onClick={()=>onNavigate('assignments')}>Manage</button></div>
+            <div className="child-record-section-head"><div><Stethoscope size={17}/><span><strong>Assigned Care Team</strong><small>Teachers, special educators and therapists</small></span></div><button onClick={()=>onNavigate('assignments',selected.child_id)}>Manage</button></div>
             <div className="structured-people-list">
               {selected.staff.map((person,index)=><div key={person.email||index}><span className="structured-person-icon"><ShieldCheck size={15}/></span><span><strong>{person.name||person.email}</strong><small>{pretty(person.assignment||person.role)} · {person.email}</small>{person.phone&&<em>{person.phone}</em>}</span></div>)}
               {!selected.staff.length&&<p className="helper">No active staff assignment.</p>}
@@ -293,10 +293,10 @@ export default function AdminChildRecords({
         <article className="panel child-record-records">
           <div className="child-record-section-head"><div><FolderOpen size={17}/><span><strong>Records & Care Summary</strong><small>Quick status across connected ANTAR modules</small></span></div></div>
           <div className="record-module-grid">
-            <button onClick={()=>onNavigate('documents')}><FileText size={18}/><span><strong>{selected.document_count}</strong><small>Documents</small></span></button>
-            <button onClick={()=>onNavigate('documents')}><FileHeart size={18}/><span><strong>{selected.medical_document_count}</strong><small>Medical / assessment</small></span></button>
-            <button onClick={()=>onNavigate('care')}><CalendarDays size={18}/><span><strong>{selected.appointment_count}</strong><small>Appointments · {selected.upcoming_appointment_count} upcoming</small></span></button>
-            <button onClick={()=>onNavigate('care')}><Stethoscope size={18}/><span><strong>{selected.therapy_count}</strong><small>Therapy sessions · {selected.upcoming_therapy_count} upcoming</small></span></button>
+            <button onClick={()=>onNavigate('documents',selected.child_id)}><FileText size={18}/><span><strong>{selected.document_count}</strong><small>Documents</small></span></button>
+            <button onClick={()=>onNavigate('documents',selected.child_id)}><FileHeart size={18}/><span><strong>{selected.medical_document_count}</strong><small>Medical / assessment</small></span></button>
+            <button onClick={()=>onNavigate('care',selected.child_id)}><CalendarDays size={18}/><span><strong>{selected.appointment_count}</strong><small>Appointments · {selected.upcoming_appointment_count} upcoming</small></span></button>
+            <button onClick={()=>onNavigate('care',selected.child_id)}><Stethoscope size={18}/><span><strong>{selected.therapy_count}</strong><small>Therapy sessions · {selected.upcoming_therapy_count} upcoming</small></span></button>
           </div>
         </article>
       </div>:<div className="panel child-record-empty-detail"><Baby size={30}/><h2>Select a child record</h2><p>Choose a record from the directory or add a new child.</p></div>}

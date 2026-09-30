@@ -50,7 +50,7 @@ type ChildRecord={
   upcoming_therapy_count:number
 }
 
-type AdminDestination='classes'|'documents'|'care'|'assignments'
+type AdminDestination='classes'|'documents'|'care'|'assignments'|'staff'
 
 const pretty=(value?:string|null)=>value?value.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase()):'—'
 const dateLabel=(value?:string|null)=>{
@@ -284,7 +284,7 @@ export default function AdminChildRecords({
           </article>
 
           <article className="panel child-record-section">
-            <div className="child-record-section-head"><div><Stethoscope size={17}/><span><strong>Assigned Care Team</strong><small>Teachers, special educators and therapists</small></span></div><button onClick={()=>onNavigate('assignments',selected.child_id)}>Manage</button></div>
+            <div className="child-record-section-head"><div><Stethoscope size={17}/><span><strong>Assigned Care Team</strong><small>Teachers, special educators and therapists</small></span></div><button onClick={()=>onNavigate('staff',selected.child_id)}>Manage Team</button></div>
             <div className="structured-people-list">
               {selected.staff.map((person,index)=><div key={person.email||index}><span className="structured-person-icon"><ShieldCheck size={15}/></span><span><strong>{person.name||person.email}</strong><small>{pretty(person.assignment||person.role)} · {person.email}</small>{person.phone&&<em>{person.phone}</em>}</span></div>)}
               {!selected.staff.length&&<p className="helper">No active staff assignment.</p>}

@@ -27,7 +27,7 @@ export default function InAppNav({
     <nav className="in-app-crumbs" aria-label="Breadcrumb">
       {onRoot
         ?<button className="in-app-crumb-button" onClick={onRoot}><Home size={13}/>{t(rootLabel)}</button>
-        :<span><Home size={13}/ >{t(rootLabel)}</span>}
+        :<span><Home size={13}/>{t(rootLabel)}</span>}
       {parentLabel&&<>
         <ChevronRight size={13}/>
         {onParent

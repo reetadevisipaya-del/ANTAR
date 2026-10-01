@@ -16,7 +16,7 @@ import {
   UsersRound,
 } from 'lucide-react'
 
-type Category='hospital'|'child_specialist'|'therapy'|'pharmacy'|'ambulance'|'other'
+type Category='hospital'|'child_specialist'|'therapy'|'pharmacy'|'ambulance'|'clinic'|'other'
 type Ownership='government'|'private'|'unknown'
 type Filter='all'|'hospital'|'child_specialist'|'therapy'|'pharmacy'|'government'
 type Sort='nearest'|'name'
@@ -89,7 +89,7 @@ function categoryFrom(tags:Record<string,string>):Category{
     /children|child specialist|paediatric|pediatric/.test(name)
   )return 'child_specialist'
   if(amenity==='hospital'||healthcare==='hospital')return 'hospital'
-  if(amenity==='clinic'||amenity==='doctors'||healthcare==='clinic'||healthcare==='doctor')return 'child_specialist'
+  if(amenity==='clinic'||amenity==='doctors'||healthcare==='clinic'||healthcare==='doctor')return 'clinic'
   return 'other'
 }
 
@@ -99,6 +99,7 @@ function categoryLabel(category:Category){
   if(category==='therapy')return 'Therapy / rehabilitation'
   if(category==='pharmacy')return 'Pharmacy'
   if(category==='ambulance')return 'Ambulance service'
+  if(category==='clinic')return 'Clinic / doctor'
   return 'Healthcare service'
 }
 
@@ -108,6 +109,7 @@ function categoryIcon(category:Category){
   if(category==='therapy')return UsersRound
   if(category==='pharmacy')return Pill
   if(category==='ambulance')return Ambulance
+  if(category==='clinic')return Stethoscope
   return Building2
 }
 
@@ -325,7 +327,7 @@ out center tags 100;`
       </div>
       <div className="medical-emergency-actions">
         <a className="medical-emergency-card urgent" href="tel:112"><ShieldCheck size={19}/><span><strong>112</strong><small>National emergency</small></span><Phone size={15}/></a>
-        <a className="medical-emergency-card" href="tel:108"><Ambulance size={19}/><span><strong>108</strong><small>Ambulance service</small></span><Phone size={15}/></a>
+        <a className="medical-emergency-card" href="tel:108"><Ambulance size={19}/><span><strong>108</strong><small>Ambulance where supported</small></span><Phone size={15}/></a>
       </div>
     </section>
 

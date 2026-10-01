@@ -250,14 +250,60 @@ footer a{justify-self:end;color:#a9acb5}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 
+
+.publication-strip{
+  margin:0 0 28px;
+  display:grid;grid-template-columns:180px 1fr;gap:28px;align-items:start;
+  border:1px solid var(--line);border-radius:20px;padding:22px 24px;
+  background:linear-gradient(135deg,rgba(199,255,74,.06),rgba(120,229,255,.035))
+}
+.publication-strip>span{
+  font:600 9px "Space Grotesk";letter-spacing:.15em;color:var(--acid);padding-top:4px
+}
+.publication-strip b{display:block;font:600 18px "Space Grotesk";letter-spacing:-.02em}
+.publication-strip p{margin:7px 0 0;color:#9da0aa;font-size:12px;line-height:1.6}
+.publication-strip strong{color:#dfe1e6;font-weight:600}
+.publication-autism{background:linear-gradient(135deg,rgba(156,140,255,.07),rgba(255,127,200,.03))}
+
+.portal-system{margin-top:34px}
+.portal-grid-detail{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.portal-card-detail{
+  min-height:100%;border:1px solid var(--line);border-radius:22px;padding:24px;
+  background:linear-gradient(160deg,rgba(255,255,255,.03),rgba(255,255,255,.012))
+}
+.portal-card-detail:nth-child(1){background:linear-gradient(160deg,rgba(120,229,255,.055),rgba(255,255,255,.01))}
+.portal-card-detail:nth-child(2){background:linear-gradient(160deg,rgba(156,140,255,.055),rgba(255,255,255,.01))}
+.portal-card-detail:nth-child(3){background:linear-gradient(160deg,rgba(199,255,74,.045),rgba(255,255,255,.01))}
+.portal-no{font:400 30px "Instrument Serif";color:#5d616d;margin-bottom:18px}
+.portal-card-detail h5{font:600 26px/1.06 "Space Grotesk";letter-spacing:-.04em;margin:15px 0 22px}
+.portal-card-detail ul{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+.portal-card-detail li{padding:14px 0;border-bottom:1px solid var(--line-soft)}
+.portal-card-detail li b{display:block;font-size:12px;margin-bottom:5px;color:#eceef2}
+.portal-card-detail li span{display:block;color:#8f939f;font-size:11px;line-height:1.55}
+
+.medical-deepdive{
+  margin-top:18px;border:1px solid var(--line);border-radius:24px;padding:28px;
+  background:
+    radial-gradient(circle at 12% 10%,rgba(120,229,255,.08),transparent 28%),
+    radial-gradient(circle at 86% 84%,rgba(199,255,74,.06),transparent 30%),
+    #0d0f14
+}
+.medical-copy{display:grid;grid-template-columns:.55fr 1.45fr;gap:28px;align-items:end}
+.medical-copy h4{margin:0;font:600 clamp(30px,4vw,54px)/1 "Space Grotesk";letter-spacing:-.05em}
+.medical-copy p{grid-column:2;margin:0;color:#9da0aa;font-size:13px;line-height:1.65;max-width:760px}
+.medical-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:28px}
+.medical-grid>div{background:#0b0d12;padding:18px}
+.medical-grid b{display:block;font:600 10px "Space Grotesk";letter-spacing:.12em;text-transform:uppercase;color:var(--cyan)}
+.medical-grid span{display:block;margin-top:9px;color:#969aa6;font-size:11px;line-height:1.55}
+
 @media(max-width:1100px){
   .hero{grid-template-columns:1fr;padding-top:130px}.hero-art{min-height:520px}
   .hero-foot{grid-template-columns:1fr 1fr}.hero-foot>div:last-child{grid-column:1/-1}
   .statement-grid{grid-template-columns:1fr;gap:36px}
   .section-intro{grid-template-columns:1fr 2fr}.section-intro p{grid-column:2;justify-self:start}
   .case-head{grid-template-columns:70px 1fr}.case-links{grid-column:2;justify-content:flex-start;margin-top:0}
-  .research-summary,.evaluation,.feature-map,.autism-evidence-grid,.measurement{grid-template-columns:1fr}
-  .finding-grid{grid-template-columns:1fr 1fr}
+  .research-summary,.evaluation,.feature-map,.autism-evidence-grid,.measurement,.medical-copy{grid-template-columns:1fr}
+  .finding-grid{grid-template-columns:1fr 1fr}.portal-grid-detail{grid-template-columns:1fr}.medical-grid{grid-template-columns:1fr 1fr}.medical-copy p{grid-column:1}
   .feature-rows{border-left:0;border-top:1px solid var(--line)}
   .feature-gallery{grid-template-columns:1fr}
   .methods-head{grid-template-columns:1fr}.methods-grid{grid-template-columns:1fr 1fr}
@@ -274,7 +320,7 @@ footer a{justify-self:end;color:#a9acb5}
   .statement h2{font-size:42px}
   .section-intro{grid-template-columns:1fr;margin-bottom:66px}.section-intro p{grid-column:auto}.section-intro h2{font-size:50px}
   .case-study{padding:66px 0 108px}.case-head{grid-template-columns:44px 1fr;gap:16px}.case-index{font-size:44px}.case-title h3{font-size:clamp(46px,15vw,76px)}
-  .case-links{grid-column:1/-1}.research-question,.meta-grid{padding:20px}.research-question h4{font-size:31px}
+  .case-links{grid-column:1/-1;flex-wrap:wrap}.research-question,.meta-grid{padding:20px}.publication-strip{grid-template-columns:1fr;gap:8px}.portal-grid-detail{grid-template-columns:1fr}.medical-grid{grid-template-columns:1fr}.medical-deepdive{padding:20px}.medical-copy{grid-template-columns:1fr}.medical-copy p{grid-column:1}.research-question h4{font-size:31px}
   .meta-grid{grid-template-columns:1fr}.browser-stage{height:520px;min-height:0}.browser-stage iframe{width:1280px;transform:scale(.41);transform-origin:top left;height:1260px}
   .finding-title{grid-template-columns:1fr;gap:10px;margin-top:58px}.finding-title h4{font-size:39px}.finding-grid{grid-template-columns:1fr}.finding{min-height:auto}
   .feature-rows div{grid-template-columns:1fr;gap:6px}.evaluation{padding:20px}.eval-items>div{grid-template-columns:28px 1fr}.eval-items em{grid-column:2}

@@ -1,4 +1,5 @@
 import { ArrowLeft, ChevronRight, Home } from 'lucide-react'
+import { useLocale } from './i18n'
 
 export default function InAppNav({
   rootLabel,
@@ -17,23 +18,24 @@ export default function InAppNav({
   onRoot?:()=>void
   onParent?:()=>void
 }){
+  const { t } = useLocale()
   return <div className="in-app-nav">
     <button className="in-app-back" onClick={onBack}>
       <ArrowLeft size={16}/>
-      <span>{backLabel||'Back'}</span>
+      <span>{t(backLabel||'Back')}</span>
     </button>
     <nav className="in-app-crumbs" aria-label="Breadcrumb">
       {onRoot
-        ?<button className="in-app-crumb-button" onClick={onRoot}><Home size={13}/>{rootLabel}</button>
-        :<span><Home size={13}/>{rootLabel}</span>}
+        ?<button className="in-app-crumb-button" onClick={onRoot}><Home size={13}/>{t(rootLabel)}</button>
+        :<span><Home size={13}/ >{t(rootLabel)}</span>}
       {parentLabel&&<>
         <ChevronRight size={13}/>
         {onParent
-          ?<button className="in-app-crumb-button" onClick={onParent}>{parentLabel}</button>
-          :<span>{parentLabel}</span>}
+          ?<button className="in-app-crumb-button" onClick={onParent}>{t(parentLabel)}</button>
+          :<span >{t(parentLabel)}</span>}
       </>}
       <ChevronRight size={13}/>
-      <strong>{currentLabel}</strong>
+      <strong >{t(currentLabel)}</strong>
     </nav>
   </div>
 }

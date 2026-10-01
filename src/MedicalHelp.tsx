@@ -28,7 +28,7 @@ import {
   UserRound,
   UsersRound,
   Volume2,
-  Wheelchair,
+  Accessibility,
 } from 'lucide-react'
 import DisabilitySupport from './DisabilitySupport'
 import './medical-help-v3.css'
@@ -104,7 +104,7 @@ const careNeeds:Array<{
   {key:'audiology',title:'Audiology & Hearing',subtitle:'Hearing tests, audiology and ENT support',icon:Volume2,tone:'amber'},
   {key:'diagnostics',title:'Diagnostics',subtitle:'Pathology, imaging and diagnostic testing',icon:TestTube2,tone:'blue'},
   {key:'pharmacy',title:'Pharmacy',subtitle:'Medicines and nearby medical stores',icon:Pill,tone:'green'},
-  {key:'assistive',title:'Assistive Devices',subtitle:'Mobility, hearing and communication aids',icon:Wheelchair,tone:'indigo'},
+  {key:'assistive',title:'Assistive Devices',subtitle:'Mobility, hearing and communication aids',icon:Accessibility,tone:'indigo'},
   {key:'schemes',title:'Government Support',subtitle:'Schemes, certificates, insurance and education support',icon:Landmark,tone:'gold'},
 ]
 
@@ -131,7 +131,7 @@ const featuredSchemes=[
     first:'Check eligibility through the ADIP / ARJUN portal.',
     href:'https://adip.depwd.gov.in/',
     tone:'sand',
-    icon:Wheelchair,
+    icon:Accessibility,
   },
   {
     title:'Niramaya Health Insurance',
@@ -243,7 +243,7 @@ function categoryIcon(category:Category){
   if(category==='audiology')return Volume2
   if(category==='diagnostics')return TestTube2
   if(category==='pharmacy')return Pill
-  if(category==='assistive')return Wheelchair
+  if(category==='assistive')return Accessibility
   if(category==='ambulance')return Ambulance
   return Building2
 }

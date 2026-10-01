@@ -77,6 +77,12 @@ type SearchOrigin={
   source:'device'|'search'
 }
 
+type LocationSuggestion={
+  lat:number
+  lon:number
+  label:string
+}
+
 type RawElement={
   id?:number|string
   type?:string
@@ -94,18 +100,19 @@ const careNeeds:Array<{
   key:Filter|'schemes'
   title:string
   subtitle:string
+  mapsQuery:string
   icon:typeof Hospital
   tone:string
 }>=[
-  {key:'hospital',title:'Hospitals & Emergency',subtitle:'Emergency care and nearby hospitals',icon:Hospital,tone:'red'},
-  {key:'child_specialist',title:'Child Specialists',subtitle:'Paediatrics, neurology and developmental care',icon:Stethoscope,tone:'orange'},
-  {key:'therapy',title:'Speech / OT / PT Therapy',subtitle:'Speech, occupational and physical therapy',icon:UsersRound,tone:'purple'},
-  {key:'mental_health',title:'Psychology & Behaviour',subtitle:'Assessment, counselling and behaviour support',icon:HeartPulse,tone:'pink'},
-  {key:'audiology',title:'Audiology & Hearing',subtitle:'Hearing tests, audiology and ENT support',icon:Volume2,tone:'amber'},
-  {key:'diagnostics',title:'Diagnostics',subtitle:'Pathology, imaging and diagnostic testing',icon:TestTube2,tone:'blue'},
-  {key:'pharmacy',title:'Pharmacy',subtitle:'Medicines and nearby medical stores',icon:Pill,tone:'green'},
-  {key:'assistive',title:'Assistive Devices',subtitle:'Mobility, hearing and communication aids',icon:Accessibility,tone:'indigo'},
-  {key:'schemes',title:'Government Support',subtitle:'Schemes, certificates, insurance and education support',icon:Landmark,tone:'gold'},
+  {key:'hospital',title:'Hospitals & Emergency',subtitle:'Emergency care and nearby hospitals',mapsQuery:'hospital emergency',icon:Hospital,tone:'red'},
+  {key:'child_specialist',title:'Child Specialists',subtitle:'Paediatrics, neurology and developmental care',mapsQuery:'pediatric developmental child specialist',icon:Stethoscope,tone:'orange'},
+  {key:'therapy',title:'Speech / OT / PT Therapy',subtitle:'Speech, occupational and physical therapy',mapsQuery:'speech occupational physiotherapy rehabilitation',icon:UsersRound,tone:'purple'},
+  {key:'mental_health',title:'Psychology & Behaviour',subtitle:'Assessment, counselling and behaviour support',mapsQuery:'child psychologist psychiatrist behavioural therapy',icon:HeartPulse,tone:'pink'},
+  {key:'audiology',title:'Audiology & Hearing',subtitle:'Hearing tests, audiology and ENT support',mapsQuery:'audiology hearing clinic',icon:Volume2,tone:'amber'},
+  {key:'diagnostics',title:'Diagnostics',subtitle:'Pathology, imaging and diagnostic testing',mapsQuery:'diagnostic laboratory pathology',icon:TestTube2,tone:'blue'},
+  {key:'pharmacy',title:'Pharmacy',subtitle:'Medicines and nearby medical stores',mapsQuery:'pharmacy medical store',icon:Pill,tone:'green'},
+  {key:'assistive',title:'Assistive Devices',subtitle:'Mobility, hearing and communication aids',mapsQuery:'assistive devices medical supply wheelchair hearing aid',icon:Accessibility,tone:'indigo'},
+  {key:'schemes',title:'Government Support',subtitle:'Schemes, certificates, insurance and education support',mapsQuery:'government disability welfare office',icon:Landmark,tone:'gold'},
 ]
 
 const featuredSchemes=[
@@ -305,6 +312,11 @@ function mapsUrl(place:Place){
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.lat+','+place.lon)}`
 }
 
+function mapsNeedUrl(query:string,origin:SearchOrigin|null){
+  const suffix=origin?` near ${origin.lat},${origin.lon}`:''
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query+suffix)}`
+}
+
 function shortLocation(label:string){
   const bits=label.split(',').map(x=>x.trim()).filter(Boolean)
   return bits.slice(0,3).join(', ')||label
@@ -320,6 +332,8 @@ export default function MedicalHelp(){
   const [origin,setOrigin]=useState<SearchOrigin|null>(null)
   const [area,setArea]=useState('')
   const [showAreaSearch,setShowAreaSearch]=useState(false)
+  const [locationSuggestions,setLocationSuggestions]=useState<LocationSuggestion[]>([])
+  const [suggestionLoading,setSuggestionLoading]=useState(false)
   const [radius,setRadius]=useState(5)
   const [places,setPlaces]=useState<Place[]>([])
   const [filter,setFilter]=useState<Filter>('all')
@@ -344,6 +358,24 @@ export default function MedicalHelp(){
       })
       .catch(()=>{})
   },[])
+
+  useEffect(()=>{
+    if(!showAreaSearch)return
+    const query=area.trim()
+    if(query.length<3){setLocationSuggestions([]);return}
+    const timer=window.setTimeout(async()=>{
+      setSuggestionLoading(true)
+      try{
+        const data=await medicalSearch<{results:LocationSuggestion[]}>({mode:'geocode',query})
+        setLocationSuggestions((data.results||[]).slice(0,5))
+      }catch{
+        setLocationSuggestions([])
+      }finally{
+        setSuggestionLoading(false)
+      }
+    },450)
+    return()=>window.clearTimeout(timer)
+  },[area,showAreaSearch])
 
   const counts=useMemo(()=>({
     all:places.length,
@@ -389,6 +421,17 @@ export default function MedicalHelp(){
     return careNeeds.filter(item=>(item.title+' '+item.subtitle).toLowerCase().includes(q))
   },[needSearch])
 
+  async function selectLocationSuggestion(match:LocationSuggestion){
+    const next:SearchOrigin={lat:match.lat,lon:match.lon,label:match.label,source:'search'}
+    setOrigin(next)
+    setArea(shortLocation(match.label))
+    setLocationSuggestions([])
+    setLocationState('ready')
+    setShowAreaSearch(false)
+    await searchNearby(next,radius)
+    setScreen('needs')
+  }
+
   async function geocodeArea(){
     const query=area.trim()
     if(!query)return setStatus('Enter a city, locality, sector or PIN code first.')
@@ -404,13 +447,7 @@ export default function MedicalHelp(){
         setLoading(false)
         return
       }
-      const next:SearchOrigin={lat:match.lat,lon:match.lon,label:match.label,source:'search'}
-      setOrigin(next)
-      setArea(shortLocation(match.label))
-      setLocationState('ready')
-      await searchNearby(next,radius)
-      setShowAreaSearch(false)
-      setScreen('needs')
+      await selectLocationSuggestion(match)
     }catch(error){
       setLocationState('error')
       setStatus(error instanceof Error?`Search failed: ${error.message}`:'Area search failed. Please try again.')
@@ -620,9 +657,17 @@ export default function MedicalHelp(){
         </button>
         <button className="mh3-secondary" onClick={()=>setShowAreaSearch(v=>!v)}><Search size={17}/> Search another area</button>
 
-        {showAreaSearch&&<div className="mh3-area-search">
-          <label><Search size={16}/><input value={area} onChange={e=>setArea(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void geocodeArea()}} placeholder="City, locality, sector or PIN code"/></label>
-          <button className="mh3-primary" onClick={()=>void geocodeArea()} disabled={loading||!area.trim()}>Search</button>
+        {showAreaSearch&&<div className="mh3-area-search-wrap">
+          <div className="mh3-area-search">
+            <label><Search size={16}/><input autoFocus value={area} onChange={e=>setArea(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void geocodeArea()}} placeholder="City, locality, sector or PIN code"/></label>
+            <button className="mh3-primary" onClick={()=>void geocodeArea()} disabled={loading||!area.trim()}>Search</button>
+          </div>
+          {(suggestionLoading||locationSuggestions.length>0)&&<div className="mh3-location-suggestions">
+            {suggestionLoading&&<div className="mh3-suggestion-loading">Finding matching locations…</div>}
+            {!suggestionLoading&&locationSuggestions.map((item,index)=><button key={item.lat+'-'+item.lon+'-'+index} onClick={()=>void selectLocationSuggestion(item)}>
+              <MapPin size={16}/><span><strong>{shortLocation(item.label)}</strong><small>{item.label}</small></span><ChevronRight size={15}/>
+            </button>)}
+          </div>}
         </div>}
 
         {locationState==='blocked'&&<div className="mh3-inline-warning"><ShieldCheck size={16}/><span>Location permission is blocked. Allow Location for this site, then try again — or search another area.</span></div>}
@@ -662,11 +707,14 @@ export default function MedicalHelp(){
       <section className="mh3-needs-grid">
         {filteredNeeds.map(item=>{
           const Icon=item.icon
-          return <button key={item.key} className={`mh3-need-card ${item.tone}`} onClick={()=>chooseNeed(item.key)}>
-            <span className="mh3-need-icon"><Icon size={22}/></span>
-            <span><strong>{item.title}</strong><small>{item.subtitle}</small></span>
-            <ChevronRight size={17}/>
-          </button>
+          return <div key={item.key} className={`mh3-need-card-wrap ${item.tone}`}>
+            <button className={`mh3-need-card ${item.tone}`} onClick={()=>chooseNeed(item.key)}>
+              <span className="mh3-need-icon"><Icon size={22}/></span>
+              <span><strong>{item.title}</strong><small>{item.subtitle}</small></span>
+              <ChevronRight size={17}/>
+            </button>
+            {item.key!=='schemes'&&<a className="mh3-maps-fallback" href={mapsNeedUrl(item.mapsQuery,origin)} target="_blank" rel="noreferrer">Search this in Maps <ExternalLink size={11}/></a>}
+          </div>
         })}
       </section>
     </main>}
@@ -713,7 +761,7 @@ export default function MedicalHelp(){
         {(filter==='all'&&!resultSearch?filteredPlaces.slice(recommended.length):filteredPlaces).map(place=><ProviderCard key={place.id} place={place} saved={saved.some(x=>x.id===place.id)} onSave={()=>toggleSaved(place)} onDetails={()=>openDetails(place)}/>)}
       </section>
 
-      {!loading&&!filteredPlaces.length&&<div className="mh3-empty"><Search size={26}/><strong>No matching services found</strong><p>Try another category, increase the radius, or search a nearby area.</p><button className="mh3-secondary" onClick={()=>setScreen('needs')}>Choose another need</button></div>}
+      {!loading&&!filteredPlaces.length&&<div className="mh3-empty"><Search size={26}/><strong>No in-app listings found yet</strong><p>The live map directory can be incomplete. You can still search the same care need around this exact location in Google Maps.</p><div className="mh3-empty-actions"><button className="mh3-secondary" onClick={()=>setScreen('needs')}>Choose another need</button><a className="mh3-primary" href={mapsNeedUrl((careNeeds.find(item=>item.key===filter)?.mapsQuery)||'healthcare',origin)} target="_blank" rel="noreferrer">Search Google Maps <ExternalLink size={14}/></a></div></div>}
     </main>}
 
     {screen==='details'&&selectedPlace&&<main className="mh3-screen">

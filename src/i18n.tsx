@@ -131,6 +131,10 @@ const copy:Dictionary={
 
 const UI_ATTRS=['placeholder','aria-label','title'] as const
 const noTranslateSelector='.message-bubble,.message-content,.chat-bubble,.chat-message,.composer-textarea,[data-no-ui-translate]'
+const textOriginals=new WeakMap<Node,string>()
+const textApplied=new WeakMap<Node,string>()
+const attributeOriginals=new WeakMap<Element,Map<string,string>>()
+const attributeApplied=new WeakMap<Element,Map<string,string>>()
 
 function translateEnglish(text:string,language:LanguageCode){
   if(language==='en')return text
@@ -176,22 +180,19 @@ export function LocaleProvider({children}:{children:ReactNode}){
     document.documentElement.dir=language==='ur'?'rtl':'ltr'
     document.body.dataset.antarLanguage=language
 
-    const originals=new WeakMap<Node,string>()
-    const attrOriginals=new WeakMap<Element,Map<string,string>>()
-
     const translateNode=(node:Node)=>{
       if(shouldSkip(node))return
 
       if(node.nodeType===Node.TEXT_NODE){
         const current=node.nodeValue||''
         if(!current.trim())return
-        const previousOriginal=originals.get(node)
-        const expected=previousOriginal===undefined?undefined:translateWithWhitespace(previousOriginal,language)
-        if(previousOriginal===undefined||current!==expected){
-          originals.set(node,current)
+        const lastApplied=textApplied.get(node)
+        if(!textOriginals.has(node)||current!==lastApplied){
+          textOriginals.set(node,current)
         }
-        const original=originals.get(node)||current
+        const original=textOriginals.get(node)||current
         const next=translateWithWhitespace(original,language)
+        textApplied.set(node,next)
         if(node.nodeValue!==next)node.nodeValue=next
         return
       }
@@ -200,16 +201,18 @@ export function LocaleProvider({children}:{children:ReactNode}){
       const element=node as Element
       if(element.matches(noTranslateSelector)||element.closest(noTranslateSelector))return
 
-      let map=attrOriginals.get(element)
-      if(!map){map=new Map();attrOriginals.set(element,map)}
+      let originals=attributeOriginals.get(element)
+      if(!originals){originals=new Map();attributeOriginals.set(element,originals)}
+      let applied=attributeApplied.get(element)
+      if(!applied){applied=new Map();attributeApplied.set(element,applied)}
       for(const attr of UI_ATTRS){
         if(!element.hasAttribute(attr))continue
         const current=element.getAttribute(attr)||''
-        const original=map.get(attr)
-        const expected=original===undefined?undefined:translateEnglish(original,language)
-        if(original===undefined||current!==expected)map.set(attr,current)
-        const source=map.get(attr)||current
+        const lastApplied=applied.get(attr)
+        if(!originals.has(attr)||current!==lastApplied)originals.set(attr,current)
+        const source=originals.get(attr)||current
         const next=translateEnglish(source,language)
+        applied.set(attr,next)
         if(current!==next)element.setAttribute(attr,next)
       }
 

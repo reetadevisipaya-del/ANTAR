@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Bell, BookOpen, CalendarDays, CheckCircle2, ClipboardCheck, FileText, MessageCircle, Plus, School, Trash2, Users } from 'lucide-react'
+import { useLocale } from './i18n'
 import { supabase } from './supabase'
 import { AdminSchedule, StaffSchedule } from './ScheduleSystem'
 import { StaffDocuments } from './DocumentSystem'
@@ -83,6 +84,7 @@ export function StaffAttendancePortal({
   initialTab?:'home'|'classes'|'students'
   welcome?:boolean
 }) {
+  const {t}=useLocale()
   const isTherapist=role==='therapist'
   const [tab, setTab] = useState<'home' | 'classes' | 'students' | 'student' | 'report' | 'homework' | 'messages' | 'notifications' | 'documents' | 'care' | 'schedule' | 'attendance'>(initialTab||'home')
   const [classes, setClasses] = useState<StaffClass[]>([])
@@ -327,18 +329,18 @@ export function StaffAttendancePortal({
 
   return <div className="staff-portal">
     <div className="staff-nav">
-      <button className={tab==='home'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('home')}}><School size={17}/>Home</button>
-      {!isTherapist&&<button className={tab==='classes'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('classes')}}><BookOpen size={17}/>My Classes</button>}
-      <button className={tab==='students'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('students')}}><Users size={17}/>{isTherapist?'My Students':'Students'}</button>
-      {!isTherapist&&<button className={tab==='student'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('student')}}><Users size={17}/>Student Overview</button>}
-      {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('report')}}><FileText size={17}/>Daily Report</button>}
-      {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('homework')}}><BookOpen size={17}/>Homework</button>}
-      <button className={tab==='messages'?'active':''} onClick={()=>{setReturnToStudent(false);setMessageChildId('');setTab('messages')}}><MessageCircle size={17}/>Messages</button>
-      <button className={tab==='notifications'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('notifications')}}><Bell size={17}/>Notifications{notificationUnread>0&&<b className="nav-unread-badge">{notificationUnread>99?'99+':notificationUnread}</b>}</button>
-      <button className={tab==='documents'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('documents')}}><FileText size={17}/>Documents</button>
-      <button className={tab==='care'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('care')}}><CalendarDays size={17}/>Appointments & Therapy</button>
-      {!isTherapist&&<button className={tab==='schedule'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('schedule')}}><CalendarDays size={17}/>Schedule</button>}
-      {!isTherapist&&<button className={tab==='attendance'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('attendance')}}><ClipboardCheck size={17}/>Attendance</button>}
+      <button className={tab==='home'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('home')}}><School size={17}/>{t('Home')}</button>
+      {!isTherapist&&<button className={tab==='classes'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('classes')}}><BookOpen size={17}/>{t('My Classes')}</button>}
+      <button className={tab==='students'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('students')}}><Users size={17}/>{t(isTherapist?'My Students':'Students')}</button>
+      {!isTherapist&&<button className={tab==='student'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('student')}}><Users size={17}/>{t('Student Overview')}</button>}
+      {!isTherapist&&<button className={tab==='report'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('report')}}><FileText size={17}/>{t('Daily Report')}</button>}
+      {!isTherapist&&<button className={tab==='homework'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('homework')}}><BookOpen size={17}/>{t('Homework')}</button>}
+      <button className={tab==='messages'?'active':''} onClick={()=>{setReturnToStudent(false);setMessageChildId('');setTab('messages')}}><MessageCircle size={17}/>{t('Messages')}</button>
+      <button className={tab==='notifications'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('notifications')}}><Bell size={17}/>{t('Notifications')}{notificationUnread>0&&<b className="nav-unread-badge">{notificationUnread>99?'99+':notificationUnread}</b>}</button>
+      <button className={tab==='documents'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('documents')}}><FileText size={17}/>{t('Documents')}</button>
+      <button className={tab==='care'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('care')}}><CalendarDays size={17}/>{t('Appointments & Therapy')}</button>
+      {!isTherapist&&<button className={tab==='schedule'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('schedule')}}><CalendarDays size={17}/>{t('Schedule')}</button>}
+      {!isTherapist&&<button className={tab==='attendance'?'active':''} onClick={()=>{setReturnToStudent(false);setTab('attendance')}}><ClipboardCheck size={17}/>{t('Attendance')}</button>}
     </div>
 
     {tab!=='home'&&<InAppNav

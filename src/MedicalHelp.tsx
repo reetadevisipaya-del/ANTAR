@@ -15,11 +15,12 @@ import {
   Stethoscope,
   UsersRound,
 } from 'lucide-react'
+import DisabilitySupport from './DisabilitySupport'
 
 type Category='hospital'|'child_specialist'|'therapy'|'pharmacy'|'ambulance'|'clinic'|'other'
 type Ownership='government'|'private'|'unknown'
 type Filter='all'|'hospital'|'child_specialist'|'therapy'|'pharmacy'|'government'
-type Sort='nearest'|'name'
+type Sort='nearest'|'low_cost'|'name'
 
 type Place={
   id:string
@@ -160,10 +161,14 @@ export default function MedicalHelp(){
       if(filter==='government')return place.ownership==='government'
       return place.category===filter
     })
-    return [...next].sort((a,b)=>sort==='nearest'
-      ?a.distanceKm-b.distanceKm
-      :a.name.localeCompare(b.name)
-    )
+    return [...next].sort((a,b)=>{
+      if(sort==='nearest')return a.distanceKm-b.distanceKm
+      if(sort==='low_cost'){
+        const rank=(value:Ownership)=>value==='government'?0:value==='unknown'?1:2
+        return rank(a.ownership)-rank(b.ownership)||a.distanceKm-b.distanceKm
+      }
+      return a.name.localeCompare(b.name)
+    })
   },[places,filter,sort])
 
   const counts=useMemo(()=>({
@@ -331,7 +336,7 @@ out center tags 100;`
       </div>
     </section>
 
-    <section className="panel medical-search-panel">
+    <section className="panel medical-search-panel" id="medical-nearby">
       <div className="medical-search-title">
         <div><MapPin size={18}/><span><strong>Where should ANTAR search?</strong><small>Use your location or enter a city, locality or PIN code.</small></span></div>
         <button className="text-button medical-privacy-button" onClick={()=>setShowPrivacy(v=>!v)}>Location privacy <ChevronDown size={13}/></button>
@@ -371,6 +376,7 @@ out center tags 100;`
       <label className="medical-sort">Sort
         <select value={sort} onChange={e=>setSort(e.target.value as Sort)}>
           <option value="nearest">Nearest first</option>
+          <option value="low_cost">Lowest-cost likely (government first)</option>
           <option value="name">Name A–Z</option>
         </select>
       </label>
@@ -419,6 +425,19 @@ out center tags 100;`
         <div className="panel"><Pill size={22}/><strong>Pharmacies</strong><p>Nearby mapped pharmacies with phone and address details when available.</p></div>
       </div>}
     </section>
+
+    <DisabilitySupport
+      onShowGovernment={()=>{
+        setFilter('government')
+        setSort('low_cost')
+        document.getElementById('medical-nearby')?.scrollIntoView({behavior:'smooth',block:'start'})
+      }}
+      onShowTherapy={()=>{
+        setFilter('therapy')
+        setSort('nearest')
+        document.getElementById('medical-nearby')?.scrollIntoView({behavior:'smooth',block:'start'})
+      }}
+    />
 
     <section className="medical-disclaimer">
       <ShieldCheck size={15}/>

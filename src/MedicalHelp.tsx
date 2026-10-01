@@ -16,6 +16,7 @@ import {
   UsersRound,
 } from 'lucide-react'
 import DisabilitySupport from './DisabilitySupport'
+import { supabase } from './supabase'
 
 type Category='hospital'|'child_specialist'|'therapy'|'pharmacy'|'ambulance'|'clinic'|'other'
 type Ownership='government'|'private'|'unknown'
@@ -144,6 +145,13 @@ function mapsUrl(place:Place){
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(place.lat+','+place.lon)}`
 }
 
+async function medicalSearch<T>(body:Record<string,unknown>):Promise<T>{
+  const {data,error}=await supabase.functions.invoke('medical-location-search',{body})
+  if(error)throw new Error(error.message||'Location search failed')
+  if(data?.error)throw new Error(String(data.error))
+  return data as T
+}
+
 export default function MedicalHelp(){
   const [origin,setOrigin]=useState<SearchOrigin|null>(null)
   const [area,setArea]=useState('')
@@ -186,46 +194,68 @@ export default function MedicalHelp(){
     setLoading(true)
     setStatus('Finding that area…')
     try{
-      const nominatim=await fetch(
-        `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=in&q=${encodeURIComponent(query)}`,
-        {headers:{'Accept-Language':'en'}}
-      )
-      if(!nominatim.ok)throw new Error('Geocoding unavailable')
-      const rows=await nominatim.json() as Array<{lat:string;lon:string;display_name:string}>
-      if(!rows[0]){
-        setStatus('That area could not be found. Try a city, locality or PIN code.')
+      const data=await medicalSearch<{results:Array<{lat:number;lon:number;label:string}>}>({
+        mode:'geocode',
+        query,
+      })
+      const match=data.results?.[0]
+      if(!match){
+        setStatus('That area could not be found. Try a more specific city, locality or PIN code.')
         setLoading(false)
         return
       }
-      const next={lat:Number(rows[0].lat),lon:Number(rows[0].lon),label:rows[0].display_name,source:'search' as const}
+      const next:SearchOrigin={lat:match.lat,lon:match.lon,label:match.label,source:'search'}
       setOrigin(next)
+      setArea(match.label)
       await searchNearby(next,radius)
-    }catch{
-      setStatus('Area search is temporarily unavailable. You can still try “Use my location”.')
+    }catch(error){
+      setStatus(error instanceof Error
+        ?`Area search could not complete: ${error.message}. Please try again.`
+        :'Area search is temporarily unavailable. Please try again.')
       setLoading(false)
     }
   }
 
   async function useLocation(){
+    if(!window.isSecureContext){
+      setStatus('Device location requires a secure HTTPS connection. Search by city, locality or PIN code instead.')
+      return
+    }
     if(!navigator.geolocation){
       setStatus('Location is not supported by this browser. Search by area instead.')
       return
     }
+
     setLoading(true)
-    setStatus('Requesting your location…')
+    setStatus('Requesting your device location…')
+
     navigator.geolocation.getCurrentPosition(async position=>{
-      const next={
-        lat:position.coords.latitude,
-        lon:position.coords.longitude,
-        label:'Your current location',
-        source:'device' as const,
+      const lat=position.coords.latitude
+      const lon=position.coords.longitude
+      let label='Your current location'
+
+      try{
+        const reverse=await medicalSearch<{label?:string}>({mode:'reverse',lat,lon})
+        if(reverse.label)label=reverse.label
+      }catch{
+        // Nearby search can still work even when reverse geocoding is unavailable.
       }
+
+      const next:SearchOrigin={lat,lon,label,source:'device'}
       setOrigin(next)
       await searchNearby(next,radius)
-    },()=>{
+    },error=>{
       setLoading(false)
-      setStatus('Location permission was not granted. Search by city, locality or PIN code instead.')
-    },{enableHighAccuracy:false,timeout:12000,maximumAge:300000})
+      if(error.code===1){
+        setStatus('Location access is blocked. Allow location for this site in your browser settings, then try again — or search by city/PIN.')
+      }else if(error.code===2){
+        setStatus('Your device could not determine its location. Turn on location services or search by city/PIN.')
+      }else if(error.code===3){
+        setStatus('Location request timed out. Try again, or search by city/PIN.')
+      }else{
+        setStatus('Your location could not be read. Search by city, locality or PIN code instead.')
+      }
+    },{enableHighAccuracy:false,timeout:15000,maximumAge:600000})
   }
 
   async function rerun(nextRadius=radius){
@@ -236,50 +266,22 @@ export default function MedicalHelp(){
   async function searchNearby(searchOrigin:SearchOrigin,searchRadius:number){
     setLoading(true)
     setStatus('Searching nearby hospitals, child specialists, therapy, pharmacies and ambulance services…')
-    const metres=searchRadius*1000
     const {lat,lon}=searchOrigin
-    const query=`[out:json][timeout:28];
-(
-nwr["amenity"="hospital"](around:${metres},${lat},${lon});
-nwr["healthcare"="hospital"](around:${metres},${lat},${lon});
-nwr["amenity"="clinic"](around:${metres},${lat},${lon});
-nwr["amenity"="doctors"](around:${metres},${lat},${lon});
-nwr["healthcare"="clinic"](around:${metres},${lat},${lon});
-nwr["healthcare"="doctor"](around:${metres},${lat},${lon});
-nwr["amenity"="pharmacy"](around:${metres},${lat},${lon});
-nwr["healthcare"="pharmacy"](around:${metres},${lat},${lon});
-nwr["healthcare"~"physiotherapist|psychotherapist|speech_therapist|occupational_therapist|rehabilitation"](around:${metres},${lat},${lon});
-nwr["amenity"="ambulance_station"](around:${metres},${lat},${lon});
-);
-out center tags 100;`
-
-    const endpoints=[
-      'https://overpass-api.de/api/interpreter',
-      'https://overpass.kumi.systems/api/interpreter',
-    ]
 
     let raw:any[]=[]
-    let found=false
-    for(const endpoint of endpoints){
-      try{
-        const response=await fetch(endpoint,{
-          method:'POST',
-          headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'},
-          body:'data='+encodeURIComponent(query),
-        })
-        if(!response.ok)continue
-        const data=await response.json()
-        raw=Array.isArray(data.elements)?data.elements:[]
-        found=true
-        break
-      }catch{
-        // Try fallback provider.
-      }
-    }
-
-    if(!found){
+    try{
+      const data=await medicalSearch<{elements:any[];radiusKm:number}>({
+        mode:'nearby',
+        lat,
+        lon,
+        radiusKm:searchRadius,
+      })
+      raw=Array.isArray(data.elements)?data.elements:[]
+    }catch(error){
       setLoading(false)
-      setStatus('The live map provider is temporarily busy. Please try again in a moment.')
+      setStatus(error instanceof Error
+        ?`Nearby care search could not complete: ${error.message}. Please try again.`
+        :'The healthcare map service is temporarily unavailable. Please try again.')
       return
     }
 
@@ -344,7 +346,7 @@ out center tags 100;`
 
       {showPrivacy&&<div className="medical-privacy-note">
         <ShieldCheck size={16}/>
-        <span>Your location is used only for this search. ANTAR does not save it to your child record or Supabase. Search coordinates are sent to OpenStreetMap services to return nearby places.</span>
+        <span>Your location is used only for this search. ANTAR does not save it to your child record or Supabase. ANTAR sends the coordinates through its secure backend only for geocoding and nearby-care lookup. They are not saved to your child record or ANTAR database.</span>
       </div>}
 
       <div className="medical-search-controls">
@@ -360,7 +362,7 @@ out center tags 100;`
 
       <div className="medical-search-status">
         <Navigation size={14}/>
-        <span>{loading?'Searching live map data…':status}</span>
+        <span>{loading?'Working on your location search…':status}</span>
       </div>
     </section>
 

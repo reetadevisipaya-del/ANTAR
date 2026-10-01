@@ -208,6 +208,8 @@ const schemes:Scheme[]=[
   },
 ]
 
+const VERIFIED_DATE='1 Oct 2026'
+
 const documentOptions=[
   ['udid','UDID / enrolment number'],
   ['certificate','Disability certificate'],
@@ -324,7 +326,7 @@ export default function DisabilitySupport({
 
     <div className="scheme-guidance-note">
       <ShieldCheck size={15}/>
-      <span>ANTAR is a scheme-discovery aid, not an eligibility authority. Use the official linked portal for the latest income limits, disability-percentage rules, application dates and benefit amounts.</span>
+      <span>ANTAR is a scheme-discovery aid, not an eligibility authority. Official sources in this section were checked on {VERIFIED_DATE}. Use the linked government portal for the latest income limits, disability-percentage rules, application dates and benefit amounts.</span>
     </div>
 
     <div className="state-scheme-card panel">

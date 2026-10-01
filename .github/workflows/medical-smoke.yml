@@ -1,0 +1,47 @@
+name: Medical Search Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/medical-smoke.yml'
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Test geocoding and nearby care
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json, urllib.request, sys
+
+          endpoint = "https://cxpsjlevzmodjpwokwyl.supabase.co/functions/v1/medical-location-search"
+
+          def post(payload, timeout=30):
+              body = json.dumps(payload).encode()
+              req = urllib.request.Request(
+                  endpoint,
+                  data=body,
+                  headers={"Content-Type":"application/json"},
+                  method="POST",
+              )
+              with urllib.request.urlopen(req, timeout=timeout) as resp:
+                  data = json.loads(resp.read().decode())
+                  print(json.dumps(data, ensure_ascii=False)[:3000])
+                  return data
+
+          ping = post({"mode":"ping"})
+          assert ping.get("ok") is True, ping
+
+          geo = post({"mode":"geocode","query":"Chandigarh"})
+          results = geo.get("results") or []
+          assert results, "Geocoding returned no locations"
+          lat, lon = results[0]["lat"], results[0]["lon"]
+
+          nearby = post({"mode":"nearby","lat":lat,"lon":lon,"radiusKm":5}, timeout=35)
+          places = nearby.get("elements") or []
+          print("Nearby mapped healthcare options:", len(places))
+          assert places, "Nearby healthcare search returned no options"
+          PY

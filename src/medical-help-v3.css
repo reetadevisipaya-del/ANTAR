@@ -186,3 +186,15 @@
   .mh3-provider-title{display:block}.mh3-owner{display:inline-block;margin-top:4px}.mh3-provider-actions a,.mh3-provider-actions button{font-size:8px}
   .mh3-bottom-nav{border-radius:18px;padding:6px}.mh3-bottom-nav button{font-size:8px}
 }
+
+.mh3-area-search-wrap{position:relative}
+.mh3-location-suggestions{margin-top:8px;border:1px solid var(--mh3-border);border-radius:15px;background:#fff;box-shadow:0 14px 30px rgba(22,65,94,.10);overflow:hidden}
+.mh3-location-suggestions>button{width:100%;display:grid;grid-template-columns:22px minmax(0,1fr) 16px;gap:8px;align-items:center;padding:11px 12px;border:0;border-bottom:1px solid #edf2f5;background:#fff;color:#34576d;text-align:left}
+.mh3-location-suggestions>button:last-child{border-bottom:0}.mh3-location-suggestions>button:hover{background:#f7fbfc}
+.mh3-location-suggestions strong,.mh3-location-suggestions small{display:block}.mh3-location-suggestions strong{font-size:10px;color:#244c64}.mh3-location-suggestions small{margin-top:2px;font-size:8px;color:#8496a1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mh3-suggestion-loading{padding:11px 12px;color:#78909d;font-size:9px}
+.mh3-need-card-wrap{border-radius:18px;overflow:hidden;border:1px solid var(--mh3-border);background:#fff;box-shadow:0 8px 22px rgba(34,81,110,.05)}
+.mh3-need-card-wrap .mh3-need-card{border:0;border-radius:0;box-shadow:none;width:100%}
+.mh3-maps-fallback{display:flex;align-items:center;justify-content:center;gap:4px;padding:8px 10px;border-top:1px solid #edf2f5;color:#0b7893;font-size:8px;font-weight:800;text-decoration:none;background:#fbfdfe}
+.mh3-empty-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.mh3-empty-actions>*{min-width:160px}
+@media(max-width:560px){.mh3-empty-actions{display:grid;width:100%}.mh3-empty-actions>*{width:100%}}

@@ -532,6 +532,7 @@ export default function MedicalHelp(){
       const category=categoryFrom(tags)
       if(category==='other')continue
       const name=tags.name||tags['name:en']||categoryLabel(category)
+      if(/\b(veterinary|veterinarian|pet hospital|animal hospital|animal clinic|vet clinic)\b/i.test(name))continue
       const fingerprint=(name+'|'+itemLat.toFixed(4)+'|'+itemLon.toFixed(4)).toLowerCase()
       if(seen.has(fingerprint))continue
       seen.add(fingerprint)

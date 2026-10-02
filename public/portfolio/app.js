@@ -2,108 +2,97 @@
   const $ = (s, c=document) => c.querySelector(s);
   const $$ = (s, c=document) => [...c.querySelectorAll(s)];
 
-  const nav = $('.site-nav');
-  const progress = $('.scroll-progress i');
+  const nav = $('.nav');
+  const progress = $('.progress i');
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const updateChrome = () => {
+  const onScroll = () => {
     const y = window.scrollY;
     nav?.classList.toggle('scrolled', y > 18);
     const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
     if (progress) progress.style.width = `${Math.min(100, (y / max) * 100)}%`;
   };
-  updateChrome();
-  window.addEventListener('scroll', updateChrome, {passive:true});
-
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  onScroll();
+  window.addEventListener('scroll', onScroll, {passive:true});
 
   if (!reduced && 'IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('in');
         observer.unobserve(entry.target);
       });
-    }, {threshold:.1, rootMargin:'0px 0px -5% 0px'});
+    }, {threshold:.08, rootMargin:'0px 0px -4% 0px'});
     $$('.reveal').forEach(el => observer.observe(el));
   } else {
     $$('.reveal').forEach(el => el.classList.add('in'));
   }
 
   $$('a[href^="#"]').forEach(link => {
-    link.addEventListener('click', event => {
+    link.addEventListener('click', e => {
       const id = link.getAttribute('href');
       if (!id || id === '#') return;
       const target = $(id);
       if (!target) return;
-      event.preventDefault();
+      e.preventDefault();
       target.scrollIntoView({behavior: reduced ? 'auto' : 'smooth', block:'start'});
     });
   });
 
-  const roleTabs = $$('[data-role-tab]');
-  const rolePanels = $$('[data-role-panel]');
-  const roleUis = $$('[data-role-ui]');
-  roleTabs.forEach(tab => {
+  const tabs = $$('[data-system-tab]');
+  const screens = $$('[data-system-screen]');
+  const copies = $$('[data-system-copy]');
+  tabs.forEach(tab => {
     tab.addEventListener('click', () => {
-      const role = tab.dataset.roleTab;
-      roleTabs.forEach(x => x.classList.toggle('active', x === tab));
-      rolePanels.forEach(x => x.classList.toggle('active', x.dataset.rolePanel === role));
-      roleUis.forEach(x => x.classList.toggle('active', x.dataset.roleUi === role));
+      const key = tab.dataset.systemTab;
+      tabs.forEach(x => x.classList.toggle('active', x === tab));
+      screens.forEach(x => x.classList.toggle('active', x.dataset.systemScreen === key));
+      copies.forEach(x => x.classList.toggle('active', x.dataset.systemCopy === key));
     });
   });
 
-  const certModal = $('[data-certificate-modal]');
-  const openCert = () => {
-    if (!certModal) return;
-    certModal.classList.add('open');
-    certModal.setAttribute('aria-hidden','false');
+  const modal = $('[data-certificate-modal]');
+  const openModal = () => {
+    if (!modal) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden','false');
     document.body.classList.add('modal-open');
-    $('[data-certificate-close]', certModal)?.focus();
+    $('[data-certificate-close]', modal)?.focus();
   };
-  const closeCert = () => {
-    if (!certModal) return;
-    certModal.classList.remove('open');
-    certModal.setAttribute('aria-hidden','true');
+  const closeModal = () => {
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden','true');
     document.body.classList.remove('modal-open');
   };
-  $$('[data-certificate-open]').forEach(btn => btn.addEventListener('click', openCert));
-  $$('[data-certificate-close]').forEach(btn => btn.addEventListener('click', closeCert));
+  $$('[data-certificate-open]').forEach(btn => btn.addEventListener('click', openModal));
+  $$('[data-certificate-close]').forEach(btn => btn.addEventListener('click', closeModal));
   window.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && certModal?.classList.contains('open')) closeCert();
+    if (e.key === 'Escape' && modal?.classList.contains('open')) closeModal();
   });
 
   if (!reduced && window.matchMedia('(pointer:fine)').matches) {
-    const sculpture = $('.research-sculpture');
+    const stack = $('.paper-stack');
     const hero = $('.hero');
-
-    hero?.addEventListener('pointermove', event => {
-      if (!sculpture) return;
+    hero?.addEventListener('pointermove', e => {
+      if (!stack) return;
       const r = hero.getBoundingClientRect();
-      const x = (event.clientX - r.left) / r.width - .5;
-      const y = (event.clientY - r.top) / r.height - .5;
-      sculpture.style.transform = `rotateY(${x * 5}deg) rotateX(${-y * 4}deg)`;
+      const x = (e.clientX - r.left) / r.width - .5;
+      const y = (e.clientY - r.top) / r.height - .5;
+      stack.style.transform = `rotateY(${x * 4}deg) rotateX(${-y * 3}deg) translate3d(${x * 4}px,${y * 4}px,0)`;
     });
     hero?.addEventListener('pointerleave', () => {
-      if (sculpture) sculpture.style.transform = '';
+      if (stack) stack.style.transform = '';
     });
 
-    $$('.research-card, .method-card, .protocol-card').forEach(card => {
-      card.addEventListener('pointermove', event => {
+    $$('.browser,.nova-frame,.evidence-doc,.certificate').forEach(card => {
+      card.addEventListener('pointermove', e => {
         const r = card.getBoundingClientRect();
-        const x = (event.clientX - r.left) / r.width - .5;
-        const y = (event.clientY - r.top) / r.height - .5;
-        card.style.transform = `perspective(900px) rotateX(${-y * 1.8}deg) rotateY(${x * 1.8}deg) translateY(-2px)`;
+        const x = (e.clientX - r.left) / r.width - .5;
+        const y = (e.clientY - r.top) / r.height - .5;
+        card.style.transform = `perspective(1200px) rotateX(${-y * 1.15}deg) rotateY(${x * 1.15}deg) translateY(-1px)`;
       });
       card.addEventListener('pointerleave', () => card.style.transform = '');
     });
   }
-
-  const iframeObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      const iframe = entry.target;
-      if (!entry.isIntersecting || iframe.dataset.activated) return;
-      iframe.dataset.activated = 'true';
-    });
-  }, {rootMargin:'200px'});
-  $$('iframe').forEach(frame => iframeObserver.observe(frame));
 })();

@@ -258,13 +258,14 @@
         <div class="case-head">
           <div class="case-index reveal">02</div>
           <div class="case-title reveal">
-            <div class="chips"><span>AI UX</span><span>PRODUCT DESIGN</span><span>BEHAVIOUR</span></div>
+            <div class="chips"><span>AI UX</span><span>PRODUCT RESEARCH</span><span>BEHAVIOUR</span></div>
             <h3>NOVA</h3>
-            <p>An AI focus planner exploring how planning tools can reduce cognitive load instead of adding to it.</p>
+            <p>An AI-assisted focus and planning workspace exploring how people can recover a clear next step — and replan when the day changes — without adding setup burden or giving up control.</p>
           </div>
           <div class="case-links reveal">
             <a class="visit" href="https://reetadevisipaya-del.github.io/NOVA-AI/" target="_blank" rel="noreferrer">Visit site ↗</a>
             <a href="https://www.figma.com/design/QeuILgYHOW9k4EMzk87Aip" target="_blank" rel="noreferrer">Figma ↗</a>
+            <a href="https://docs.google.com/spreadsheets/d/1j8Al1qaRmNnTY4QFIXjQnpTg0fles3DRdVGGuKdbTdQ/edit?usp=drivesdk" target="_blank" rel="noreferrer">UX Project Workbook ↗</a>
             <a href="https://drive.google.com/drive/folders/179tTl0QSkX8tbBwXfhj86xZnyuPMw8Jp" target="_blank" rel="noreferrer">Research Drive ↗</a>
             <a href="https://github.com/reetadevisipaya-del/NOVA-AI" target="_blank" rel="noreferrer">GitHub ↗</a>
           </div>
@@ -272,14 +273,14 @@
 
         <div class="research-summary">
           <div class="research-question reveal">
-            <span class="kicker">BEHAVIOURAL PROBLEM</span>
-            <h4>When a user is already overwhelmed, a complex productivity system can become one more thing to manage.</h4>
+            <span class="kicker">CORE DESIGN CHALLENGE</span>
+            <h4>How can NOVA help users regain a clear next step — and replan when work changes — without adding setup burden or taking away control?</h4>
           </div>
           <div class="meta-grid reveal">
-            <div><b>Focus</b><span>Planning friction · prioritisation · attention</span></div>
-            <div><b>Design goal</b><span>Lower cognitive overhead while preserving user control</span></div>
-            <div><b>Core flow</b><span>Today · Calendar · Tasks · Projects · Inbox · Focus</span></div>
-            <div><b>Design + documentation</b><span>Figma · structured NOVA research Drive · interaction system · high-fidelity UI</span></div>
+            <div><b>Product type</b><span>AI-assisted focus + planning workspace</span></div>
+            <div><b>Primary audience</b><span>Project-based knowledge workers / individual contributors</span></div>
+            <div><b>Product principle</b><span>Organise → Focus → Adapt → Act</span></div>
+            <div><b>Value proposition</b><span>Know what matters next — even when the day changes.</span></div>
           </div>
         </div>
 
@@ -288,51 +289,111 @@
           <div class="image-note">ACTUAL FIGMA INTERFACE / NOVA</div>
         </div>
 
-        <div class="finding-title reveal"><span>Research-led design logic</span><h4>Behavioural insight → product response</h4></div>
+        <div class="publication-strip reveal nova-workbook-strip">
+          <span>RESEARCH WORKBOOK</span>
+          <div>
+            <b>NOVA — UX Project Workbook</b>
+            <p>Full project evidence: problem definition, proto-persona, user story map, proposed solution, HMWs and hypotheses, competitor research, secondary evidence, student pilot framework, quantitative measures, thematic analysis, product requirements, information architecture and prototype handoff.</p>
+            <a class="inline-research-link" href="https://docs.google.com/spreadsheets/d/1j8Al1qaRmNnTY4QFIXjQnpTg0fles3DRdVGGuKdbTdQ/edit?usp=drivesdk" target="_blank" rel="noreferrer">Open UX Project Workbook ↗</a>
+          </div>
+        </div>
+
+        <div class="finding-title reveal"><span>01 / Problem evidence</span><h4>Why NOVA exists</h4></div>
+        <div class="nova-evidence-ledger reveal">
+          <div><b>Fragmented workday</b><span>Work is split across tasks, meetings, messages and documents; the problem is maintaining priority as the day changes.</span><em>Microsoft workplace telemetry + Work Trend Index</em></div>
+          <div><b>Information sprawl</b><span>Knowledge workers maintain divergent personal information spaces and repeatedly reconstruct context.</span><em>PIM research · Alon et al.</em></div>
+          <div><b>Plans degrade under interruption</b><span>Planning helps, but ordinary plans lose value when interruptions accumulate; contingent planning matters.</span><em>Parke et al. 2018</em></div>
+          <div><b>Capacity is uncertain</b><span>Time estimates can be vague or optimistic, so effort and capacity should remain editable rather than treated as AI certainty.</span><em>Ahmetoglu, Brumby & Cox 2020</em></div>
+          <div><b>Switching has a cost</b><span>Frequent context switching can fragment attention and make it harder to return to the original task.</span><em>APA + UC Irvine attention research</em></div>
+          <div><b>AI needs control</b><span>Recommendations should be inspectable and optional; explanations help only when they do not add unnecessary complexity.</span><em>Human–AI control + explainability research</em></div>
+        </div>
+
+        <div class="research-summary nova-research-study">
+          <div class="research-question reveal">
+            <span class="kicker">02 / STUDENT PILOT FRAMEWORK</span>
+            <h4>A mixed UX research flow designed to compare the effort of current prioritisation with an early NOVA concept.</h4>
+            <p class="research-boundary">Research boundary: the workbook explicitly describes a 10-profile <strong>simulated student sample</strong>. The student pilot supports a student use-case exploration and should not be presented as population-level or professional-market validation.</p>
+          </div>
+          <div class="meta-grid reveal">
+            <div><b>Sample frame</b><span>10 undergraduate + postgraduate student profiles across varied disciplines</span></div>
+            <div><b>Session design</b><span>Approx. 50–60 minutes</span></div>
+            <div><b>Qualitative</b><span>Semi-structured interview + concept reaction</span></div>
+            <div><b>Quantitative</b><span>NASA-TLX · UMUX-LITE · S-TIAS</span></div>
+          </div>
+        </div>
+
+        <div class="nova-method-flow reveal">
+          <div><span>A</span><b>Context interview</b><p>Current planning habits, tools, deadlines, interruptions and group commitments.</p></div>
+          <div><span>B</span><b>Current-workflow task</b><p>Plan the next four hours from a scenario with classes, deadlines, group work and an unexpected request.</p></div>
+          <div><span>C</span><b>NASA-TLX</b><p>Rate workload after the current prioritisation task across six workload dimensions.</p></div>
+          <div><span>D</span><b>NOVA concept task</b><p>Repeat the scenario using Focus Brief, Top Priorities, Capacity, Why this?, Focus Mode and Suggested Replan.</p></div>
+          <div><span>E</span><b>UMUX-LITE</b><p>Two-item perceived usability measure after interacting with the concept.</p></div>
+          <div><span>F</span><b>S-TIAS</b><p>Short trust-in-automation measure after AI recommendation and replanning interaction.</p></div>
+        </div>
+
+        <div class="finding-title reveal"><span>03 / Interview design</span><h4>What the research asks</h4></div>
+        <div class="nova-question-grid reveal">
+          <div><span>PRIORITISATION</span><p>How do you decide what to work on first when several academic responsibilities compete?</p></div>
+          <div><span>FRAGMENTATION</span><p>Where do tasks and commitments originate — LMS, messages, email, calendar, notes or task apps?</p></div>
+          <div><span>REPLANNING</span><p>Tell me about a recent day when your original plan stopped being realistic.</p></div>
+          <div><span>CAPACITY</span><p>How do you judge whether you actually have enough time to finish what you planned?</p></div>
+          <div><span>TRUST</span><p>If NOVA recommended one task as the best thing to do next, what would you need to know before following it?</p></div>
+          <div><span>AI CONTROL</span><p>How much should NOVA be allowed to change your plan automatically?</p></div>
+          <div><span>EXPLAINABILITY</span><p>Would a “Why this?” explanation help? How much explanation would you want?</p></div>
+          <div><span>PRIVACY</span><p>Would you connect calendar, LMS, email or messages? Which sources would you avoid?</p></div>
+        </div>
+
+        <div class="finding-title reveal"><span>04 / Workbook pilot snapshot</span><h4>Quantitative signals recorded in the workbook</h4></div>
+        <div class="nova-metrics reveal">
+          <div><small>NASA-TLX / CURRENT WORKFLOW</small><strong>72.8</strong><span>/100 mean</span></div>
+          <div><small>NASA-TLX / NOVA CONCEPT</small><strong>46.9</strong><span>/100 mean</span></div>
+          <div><small>UMUX-LITE</small><strong>5.81</strong><span>/7 mean</span></div>
+          <div><small>S-TIAS</small><strong>4.62</strong><span>/7 mean</span></div>
+        </div>
+        <p class="nova-metric-note reveal">These figures are reproduced from the workbook’s simulated student-pilot example and are shown as prototype-research evidence, not as generalisable user-study estimates.</p>
+
+        <div class="finding-title reveal"><span>05 / Thematic analysis</span><h4>What the workbook synthesis surfaced</h4></div>
+        <div class="nova-theme-list reveal">
+          <div><b>10/10</b><span>Information is fragmented</span><em>Consolidate today’s relevant signals instead of becoming another silo.</em></div>
+          <div><b>10/10</b><span>Priority is multi-dimensional</span><em>Show deadline, importance, effort, dependency and capacity — not one opaque score.</em></div>
+          <div><b>9/10</b><span>Plans become outdated</span><em>Make Change Impact + Suggested Replan a first-class flow.</em></div>
+          <div><b>10/10</b><span>Users want control over AI</span><em>AI proposes; the user confirms, edits, ignores or chooses an alternative.</em></div>
+          <div><b>9/10</b><span>Concise explainability is preferred</span><em>Short factors first; deeper reasoning only on demand.</em></div>
+          <div><b>8/10</b><span>Setup burden threatens adoption</span><em>Strong defaults, connected context and minimal manual setup.</em></div>
+          <div><b>8/10</b><span>Focus protection matters</span><em>Priority support needs a quiet Focus Mode, not just a ranked list.</em></div>
+          <div><b>8/10</b><span>Capacity / effort is uncertain</span><em>Use editable estimates and alternatives instead of false precision.</em></div>
+        </div>
+
+        <div class="finding-title reveal"><span>06 / Competitor research</span><h4>The gap is not “AI prioritises tasks.”</h4></div>
+        <div class="feature-map reveal">
+          <div class="feature-map-head">
+            <span>COMPETITIVE SYNTHESIS</span>
+            <h4>NOVA’s differentiation is the quality of the focus experience.</h4>
+          </div>
+          <div class="feature-rows">
+            <div><b>Notion / ClickUp</b><span>Deep configurability → opportunity for stronger defaults and lower setup burden.</span></div>
+            <div><b>Motion</b><span>Heavy auto-scheduling → test recommendation vs one-click replan vs full automation.</span></div>
+            <div><b>Sunsama</b><span>Calm, deliberate planning → preserve capacity awareness while reducing repetitive planning effort.</span></div>
+            <div><b>Todoist</b><span>Simple capture → retain a lightweight mental model while adding contextual decision support.</span></div>
+            <div><b>Asana</b><span>AI prioritisation already exists → prioritisation alone is not a defensible differentiator.</span></div>
+          </div>
+        </div>
+
+        <div class="finding-title reveal"><span>07 / Research → design</span><h4>Evidence translated into product requirements</h4></div>
         <div class="finding-grid">
-          <div class="finding reveal">
-            <span>N01</span>
-            <h5>Priority is often unclear when everything looks urgent.</h5>
-            <p>The interface needs to make “what matters now” legible without forcing the user to manually compare every task.</p>
-            <div class="mapping"><b>FEATURE</b><em>Today dashboard + priority detail + AI suggestion.</em></div>
-          </div>
-          <div class="finding reveal">
-            <span>N02</span>
-            <h5>Plans break when the day changes.</h5>
-            <p>A useful planner should help a user understand what a new meeting or deadline affects instead of silently reshuffling the schedule.</p>
-            <div class="mapping"><b>FEATURE</b><em>Change Impact + Adaptive Replan with explanation.</em></div>
-          </div>
-          <div class="finding reveal">
-            <span>N03</span>
-            <h5>Focus requires protection from context switching.</h5>
-            <p>During deep work, secondary information should disappear rather than compete for attention.</p>
-            <div class="mapping"><b>FEATURE</b><em>Dedicated Focus Mode with one task and one next step.</em></div>
-          </div>
-          <div class="finding reveal">
-            <span>N04</span>
-            <h5>AI needs visible reasoning and user control.</h5>
-            <p>Recommendations become more trustworthy when the user can see why the system suggested something and choose whether to accept it.</p>
-            <div class="mapping"><b>FEATURE</b><em>“Why this matters?” rationale + accept/adjust controls.</em></div>
-          </div>
-          <div class="finding reveal">
-            <span>N05</span>
-            <h5>Planning lives across different mental models.</h5>
-            <p>Some users think in time, some in projects, some in tasks and some in incoming commitments.</p>
-            <div class="mapping"><b>FEATURE</b><em>Calendar · Projects · Tasks · Inbox · Search connected by one system.</em></div>
-          </div>
-          <div class="finding reveal">
-            <span>N06</span>
-            <h5>Automation should remain adjustable.</h5>
-            <p>The system should support different comfort levels with AI rather than assume full automation is always desirable.</p>
-            <div class="mapping"><b>FEATURE</b><em>Recommendation behaviour + automation-level settings.</em></div>
-          </div>
+          <div class="finding reveal"><span>N01</span><h5>Today / Focus Brief</h5><p>Users do not need to see every task at once; they need a smaller, current view of what matters now.</p><div class="mapping"><b>RESPONSE</b><em>Focus Brief + a small set of top priorities.</em></div></div>
+          <div class="finding reveal"><span>N02</span><h5>Adaptive Replan</h5><p>Replanning is as important as initial planning because interruptions and new constraints make plans stale.</p><div class="mapping"><b>RESPONSE</b><em>Change Impact + Suggested Replan.</em></div></div>
+          <div class="finding reveal"><span>N03</span><h5>Why this?</h5><p>Recommendations need visible factors before users can judge whether they make sense.</p><div class="mapping"><b>RESPONSE</b><em>Deadline · importance · dependency · effort · capacity cues.</em></div></div>
+          <div class="finding reveal"><span>N04</span><h5>AI override</h5><p>AI should support judgment rather than silently take over planning.</p><div class="mapping"><b>RESPONSE</b><em>Accept · Edit · Ignore · Alternative.</em></div></div>
+          <div class="finding reveal"><span>N05</span><h5>Capacity awareness</h5><p>Calendar time is not the same as realistic effort or available energy.</p><div class="mapping"><b>RESPONSE</b><em>Editable effort + overload warning + alternative recommendations.</em></div></div>
+          <div class="finding reveal"><span>N06</span><h5>Suggested commitments</h5><p>Small follow-ups can remain buried in communication, but automatic task creation can feel intrusive.</p><div class="mapping"><b>RESPONSE</b><em>Surface likely commitments only for confirmation.</em></div></div>
         </div>
 
         <div class="feature-gallery">
           <div class="gallery-copy reveal">
             <span class="kicker">ACTUAL UI</span>
             <h4>From planning to reflection.</h4>
-            <p>The design system carries the same visual hierarchy through planning, task focus, schedule changes and reflective journaling.</p>
+            <p>The interface carries the same visual hierarchy through planning, task focus, schedule changes and reflective journaling.</p>
           </div>
           <div class="gallery-img reveal">
             <img src="./assets/nova-journal.png" alt="Actual NOVA journal interface from Figma" loading="lazy" />
@@ -341,14 +402,15 @@
 
         <div class="evaluation reveal">
           <div>
-            <span class="kicker">USABILITY QUESTIONS</span>
-            <h4>Does the AI reduce work, or merely move it around?</h4>
+            <span class="kicker">PRIMARY PROTOTYPE FLOW</span>
+            <h4>See → understand → focus → adapt.</h4>
           </div>
           <div class="eval-items">
-            <div><b>01</b><span>Create a realistic focus plan</span><em>planning effort</em></div>
-            <div><b>02</b><span>Understand a schedule change</span><em>mental-model clarity</em></div>
-            <div><b>03</b><span>Act on an AI suggestion</span><em>trust + agency</em></div>
-            <div><b>04</b><span>Move between calendar and tasks</span><em>flow continuity</em></div>
+            <div><b>01</b><span>Today → Priority Detail</span><em>understand why it is first</em></div>
+            <div><b>02</b><span>Priority Detail → Focus Mode</span><em>move from planning into action</em></div>
+            <div><b>03</b><span>Focus → Change Impact</span><em>understand disruption before reacting</em></div>
+            <div><b>04</b><span>Change Impact → Adaptive Replan</span><em>review consequences before accepting</em></div>
+            <div><b>05</b><span>Adaptive Replan → Today</span><em>apply only after user consent</em></div>
           </div>
         </div>
       </article>

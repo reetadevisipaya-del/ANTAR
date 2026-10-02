@@ -3,462 +3,662 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#f3f0e8" />
-  <meta name="description" content="Smayra — Psychology × UX Research. Accessibility, special-needs UX, care systems and evidence-led product design." />
+  <meta name="theme-color" content="#07070b" />
+  <meta name="description" content="Smayra — Psychology × UX Research portfolio. Research-led products for accessibility, education, care and human behaviour." />
   <title>Smayra — Psychology × UX Research</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <div class="ambient a1" aria-hidden="true"></div>
+  <div class="ambient a2" aria-hidden="true"></div>
   <div class="grain" aria-hidden="true"></div>
-  <div class="progress" aria-hidden="true"><i></i></div>
 
-  <header class="nav">
-    <a class="brand" href="#top"><span>S</span><b>SMAYRA</b></a>
+  <header class="topbar">
+    <a class="brand" href="#top"><span class="brand-dot"></span>SMAYRA</a>
     <nav>
-      <a href="#work">Work</a>
-      <a href="#research">Research</a>
-      <a href="#fieldwork">Fieldwork</a>
-      <a href="#contact">Contact</a>
+      <a href="#work">Case studies</a>
+      <a href="#experience">Experience</a>
+      <a href="#methods">Methods</a>
+      <a href="#about">About</a>
     </nav>
-    <a class="nav-mail" href="mailto:Smayra.sipaya2006@gmail.com">Available for research roles ↗</a>
+    <a class="mini-cta" href="mailto:Smayra.sipaya2006@gmail.com">Contact ↗</a>
   </header>
 
   <main id="top">
-    <section class="hero">
-      <div class="hero-rule r1"></div>
-      <div class="hero-rule r2"></div>
-      <div class="hero-copy shell">
-        <div class="hero-meta reveal">
-          <span>PSYCHOLOGY × UX RESEARCH</span>
-          <span>ACCESSIBILITY · SPECIAL NEEDS · PRODUCT</span>
-        </div>
-        <h1 class="reveal">
-          I research where<br>
-          <em>systems fail people</em><br>
-          — then redesign them.
-        </h1>
-        <div class="hero-bottom reveal">
-          <p>
-            I’m Smayra, a psychology researcher and UX practitioner focused on
-            accessibility, special-needs UX, inclusive education and care systems.
-            My work moves from <strong>field insight → research evidence → interface decisions.</strong>
-          </p>
-          <div class="hero-actions">
-            <a class="btn primary" href="#work">View case studies ↓</a>
-            <a class="btn secondary" href="https://www.linkedin.com/in/smayrasipaaya/?isSelfProfile=true" target="_blank" rel="noreferrer">LinkedIn ↗</a>
-          </div>
+    <section class="hero shell">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-copy reveal">
+        <div class="eyebrow"><span></span>PSYCHOLOGY × UX RESEARCH</div>
+        <h1>I study <em>why</em><br>people struggle —<br>then redesign the system.</h1>
+        <p>
+          I'm <strong>Smayra</strong>, a psychology researcher and UX practitioner focused on accessibility,
+          inclusive digital experiences and research-led products for people with special needs and the people who support them.
+        </p>
+        <div class="hero-actions">
+          <a class="btn primary" href="#work">Explore research ↓</a>
+          <a class="btn" href="https://github.com/reetadevisipaya-del" target="_blank" rel="noreferrer">GitHub ↗</a>
         </div>
       </div>
 
-      <div class="hero-object reveal" aria-hidden="true">
-        <div class="paper-stack">
-          <div class="sheet s1"><span>FIELD</span><b>Observe</b><small>Context · behaviour · barriers</small></div>
-          <div class="sheet s2"><span>RESEARCH</span><b>Interpret</b><small>Interviews · synthesis · evidence</small></div>
-          <div class="sheet s3"><span>PRODUCT</span><b>Translate</b><small>Requirements · systems · UI</small></div>
-          <div class="sheet s4"><span>TEST</span><b>Evaluate</b><small>Usability · metrics · iteration</small></div>
-        </div>
+      <div class="hero-art reveal" aria-hidden="true">
+        <div class="research-orbit orbit-1"></div>
+        <div class="research-orbit orbit-2"></div>
+        <div class="research-card rc1"><span>01</span><b>Observe</b><small>behaviour & friction</small></div>
+        <div class="research-card rc2"><span>02</span><b>Synthesise</b><small>needs into requirements</small></div>
+        <div class="research-card rc3"><span>03</span><b>Test</b><small>what actually changes</small></div>
+        <div class="hero-core">WHY?</div>
       </div>
 
-      <div class="hero-ledger shell reveal">
-        <div><small>FOCUS</small><b>Accessibility + special-needs UX</b></div>
-        <div><small>METHODS</small><b>Interviews · needs assessment · usability</b></div>
-        <div><small>MEASURES</small><b>SUS · task metrics · gaze · qualitative analysis</b></div>
-        <div><small>BUILD</small><b>Figma · React · Supabase · GitHub</b></div>
+      <div class="hero-foot reveal">
+        <div><b>Focus</b><span>UX Research · Accessibility · Behaviour</span></div>
+        <div><b>Methods</b><span>Interviews · Usability · SUS · Eye tracking</span></div>
+        <div><b>Build</b><span>Figma · React · Supabase · Web prototyping</span></div>
       </div>
     </section>
 
-    <section class="intro shell" id="research">
-      <div class="eyebrow reveal">00 / RESEARCH POSITION</div>
-      <div class="intro-grid">
-        <h2 class="reveal">The polished interface is the final layer.<br><em>The real work happens before it.</em></h2>
-        <div class="intro-copy reveal">
-          <p>I care about the barriers that are easy to dismiss as “user error”: sensory overload, unclear navigation, missing information, inaccessible workflows and systems that assume everyone interacts the same way.</p>
-          <p>I use psychology, field research and UX methods to make those barriers visible — then turn them into requirements that can actually be designed and tested.</p>
-        </div>
+    <section class="statement shell" id="about">
+      <div class="section-code reveal">00 / RESEARCH LENS</div>
+      <div class="statement-grid">
+        <h2 class="reveal">The interface is the visible layer.<br><em>The research is the real product.</em></h2>
+        <p class="reveal">
+          My psychology background changes how I approach UX. I look at attention, cognitive load,
+          trust, support needs, predictability and context — then connect those observations to specific
+          interface decisions that can be evaluated rather than merely styled. I care deeply about making
+          digital systems more accessible for people with special needs, and I want my research to lead to
+          practical improvements in how people learn, communicate, navigate care and use technology.
+        </p>
       </div>
     </section>
 
-    <section class="work" id="work">
-      <div class="work-head shell">
-        <div class="eyebrow reveal">01 / SELECTED CASE STUDIES</div>
-        <h2 class="reveal">Evidence into product.</h2>
+    <section class="work shell" id="work">
+      <div class="section-intro">
+        <div class="section-code reveal">01 / SELECTED CASE STUDIES</div>
+        <h2 class="reveal">Research → decision → interface.</h2>
+        <p class="reveal">Each project below shows the trail from a human problem to a concrete product response.</p>
       </div>
 
-      <!-- ANTAR -->
-      <article class="case antar">
-        <div class="case-header shell reveal">
-          <div class="case-index">01</div>
-          <div class="case-title">
-            <span class="case-kicker">CARE TECH · SPECIAL NEEDS · PARENT RESEARCH</span>
+      <article class="case-study" id="antar">
+        <div class="case-head">
+          <div class="case-index reveal">01</div>
+          <div class="case-title reveal">
+            <div class="chips"><span>CARE TECH</span><span>UX RESEARCH</span><span>ROLE-BASED PRODUCT</span></div>
             <h3>ANTAR</h3>
-            <p>A parent-first digital care system for families of children with special needs.</p>
+            <p>A parent-first communication and care portal designed specifically for families of children with special needs, bringing school, therapy, health and institute information into one clear system.</p>
           </div>
-          <div class="case-actions">
-            <a class="btn primary" href="https://reetadevisipaya-del.github.io/ANTAR/" target="_blank" rel="noreferrer">Visit live product ↗</a>
-            <a class="btn secondary" href="https://github.com/reetadevisipaya-del/ANTAR" target="_blank" rel="noreferrer">GitHub ↗</a>
+          <div class="case-links reveal">
+            <a class="visit" href="https://reetadevisipaya-del.github.io/ANTAR/" target="_blank" rel="noreferrer">Visit site ↗</a>
+            <a href="https://github.com/reetadevisipaya-del/ANTAR" target="_blank" rel="noreferrer">GitHub ↗</a>
           </div>
         </div>
 
-        <div class="case-meta shell reveal">
-          <div><small>PRIMARY USER</small><b>Parents of children with special needs</b></div>
-          <div><small>RESEARCH STATUS</small><b>Parent-needs research + paper in preparation</b></div>
-          <div><small>CONTEXT</small><b>Institute · home · therapy · healthcare</b></div>
-          <div><small>MY ROLE</small><b>Research framing · IA · UX · development</b></div>
+        <div class="research-summary">
+          <div class="research-question reveal">
+            <span class="kicker">RESEARCH QUESTION</span>
+            <h4>How can one interface reduce the information gap for parents of children with special needs while connecting them clearly with the educators, therapists and professionals supporting their child?</h4>
+          </div>
+          <div class="meta-grid reveal">
+            <div><b>Context</b><span>Parents of children with special needs ↔ institute communication and care coordination</span></div>
+            <div><b>Primary users</b><span>Parents of children with special needs</span></div>
+            <div><b>Research base</b><span>Parent-needs research · stakeholder interviews · IA · UX · product development</span></div>
+            <div><b>Build</b><span>React · Supabase · GitHub Pages</span></div>
+          </div>
         </div>
 
-        <section class="immersive shell reveal">
-          <div class="immersive-copy">
-            <span class="technical">ACTUAL PRODUCT / INTERACTIVE PREVIEW</span>
-            <h4>Use the real ANTAR build.</h4>
-            <p>The preview below is not a mockup. It is the deployed website embedded directly into the portfolio.</p>
-            <div class="micro-list">
-              <span>Portal selector</span>
-              <span>Parent / Staff / Admin flows</span>
-              <span>Authentication</span>
-              <span>Medical Help Near Me</span>
+        <div class="publication-strip reveal">
+          <span>RESEARCH STATUS</span>
+          <div><b>Parent-needs research paper in preparation</b><p>ANTAR is grounded in research with parents of children with special needs, with ongoing work connected to SOREM. The study focuses on what parents need from institutes, educators, therapists and care systems — and those findings are being translated directly into the product.</p></div>
+        </div>
+
+        <div class="live-panel reveal">
+          <div class="browser-top">
+            <div class="browser-dots"><i></i><i></i><i></i></div>
+            <span>LIVE PRODUCT / ANTAR</span>
+            <a href="https://reetadevisipaya-del.github.io/ANTAR/" target="_blank" rel="noreferrer">Open full site ↗</a>
+          </div>
+          <div class="browser-stage">
+            <iframe src="https://reetadevisipaya-del.github.io/ANTAR/" title="Live ANTAR parent–institution care portal" loading="lazy"></iframe>
+            <a class="iframe-fallback" href="https://reetadevisipaya-del.github.io/ANTAR/" target="_blank" rel="noreferrer">If preview is blocked, open ANTAR ↗</a>
+          </div>
+        </div>
+
+        <div class="finding-title reveal"><span>Research synthesis</span><h4>What the product needed to solve</h4></div>
+        <div class="finding-grid">
+          <div class="finding reveal">
+            <span>F01</span>
+            <h5>Important information was fragmented.</h5>
+            <p>Parents of children with special needs need child information, attendance, school updates, therapy information and records without hunting across disconnected channels.</p>
+            <div class="mapping"><b>DESIGN RESPONSE</b><em>One parent dashboard + a persistent “My Child” record.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>F02</span>
+            <h5>Daily visibility matters more than administrative complexity.</h5>
+            <p>The highest-value information is immediate: attendance, today's report, homework, appointments and important messages.</p>
+            <div class="mapping"><b>DESIGN RESPONSE</b><em>Dashboard hierarchy prioritises “what changed today?”</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>F03</span>
+            <h5>Care coordination crosses school and health contexts.</h5>
+            <p>Therapy, medical appointments, progress information and documents belong in the same care journey rather than separate silos.</p>
+            <div class="mapping"><b>DESIGN RESPONSE</b><em>Care, appointments, records and documents share one navigation system.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>F04</span>
+            <h5>Access to help should be actionable, not informational.</h5>
+            <p>Parents may need nearby hospitals, child specialists, therapy, pharmacies, ambulance information and government support quickly — especially when navigating ongoing developmental, rehabilitation or medical needs.</p>
+            <div class="mapping"><b>DESIGN RESPONSE</b><em>Medical Help Near Me + low-cost/government-support pathways.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>F05</span>
+            <h5>Different people need different access.</h5>
+            <p>A parent, therapist and institute administrator should not see or control the same information.</p>
+            <div class="mapping"><b>DESIGN RESPONSE</b><em>Role detection after authentication: Parent · Staff · Institute Admin.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>F06</span>
+            <h5>Trust depends on transparency.</h5>
+            <p>Parents need to know who supports their child, what happened that day, what is scheduled next, and where important school, therapy and medical records live.</p>
+            <div class="mapping"><b>DESIGN RESPONSE</b><em>Staff contacts, structured updates, schedule, records and communication history.</em></div>
+          </div>
+        </div>
+
+        <div class="feature-map reveal">
+          <div class="feature-map-head">
+            <span>FINDING → FEATURE MAP</span>
+            <h4>The interface is organised around research needs, not menu categories.</h4>
+          </div>
+          <div class="feature-rows">
+            <div><b>Daily visibility</b><span>Dashboard · Attendance · Daily report · Homework</span></div>
+            <div><b>Child continuity</b><span>My Child · profile · support needs · important medical records</span></div>
+            <div><b>Care coordination</b><span>Therapy · appointments · progress · documents</span></div>
+            <div><b>Communication</b><span>Messages · assigned staff · quick contact</span></div>
+            <div><b>Access to support</b><span>Medical Help Near Me · specialists · hospitals · pharmacy · schemes</span></div>
+            <div><b>Institution control</b><span>People & Access · students · staff · role assignment · child–staff mapping</span></div>
+          </div>
+        </div>
+
+        <div class="portal-system">
+          <div class="finding-title reveal"><span>System architecture</span><h4>Three portals. Different jobs. Shared child context.</h4></div>
+          <div class="portal-grid-detail">
+            <section class="portal-card-detail reveal">
+              <div class="portal-no">P / 01</div>
+              <span class="kicker">PARENT PORTAL</span>
+              <h5>What a parent of a child with special needs needs to understand today.</h5>
+              <ul>
+                <li><b>My Child Dashboard</b><span>Class, section, roll/student number, blood group and support profile in one child-centred view.</span></li>
+                <li><b>Attendance</b><span>Current attendance and recent records without navigating through administrative systems.</span></li>
+                <li><b>Daily report + homework</b><span>School-day updates, today’s homework and the latest report from the care/education team.</span></li>
+                <li><b>Therapy & appointments</b><span>Upcoming therapy sessions and care events shown alongside school information.</span></li>
+                <li><b>Medical records</b><span>Important medical and prescription records stored in one secure area.</span></li>
+                <li><b>Assigned staff + messages</b><span>The child’s current care team and a direct route to staff communication.</span></li>
+              </ul>
+            </section>
+            <section class="portal-card-detail reveal">
+              <div class="portal-no">S / 02</div>
+              <span class="kicker">STAFF PORTAL</span>
+              <h5>A child-specific workspace for teachers, educators and therapists.</h5>
+              <ul>
+                <li><b>Student overview</b><span>Learning, attendance, care, records and parent communication in a single student context.</span></li>
+                <li><b>Attendance + daily report</b><span>View or mark attendance and add structured daily updates.</span></li>
+                <li><b>Homework</b><span>View and manage today’s learning tasks for the selected student.</span></li>
+                <li><b>Care</b><span>View or schedule therapy and appointment information tied to that child.</span></li>
+                <li><b>Records</b><span>Secure medical/prescription documents and child records.</span></li>
+                <li><b>Parent communication</b><span>Open the parent chat from the student workspace instead of switching systems.</span></li>
+              </ul>
+            </section>
+            <section class="portal-card-detail reveal">
+              <div class="portal-no">A / 03</div>
+              <span class="kicker">INSTITUTE ADMIN</span>
+              <h5>Access, people and institutional structure.</h5>
+              <ul>
+                <li><b>People & Access</b><span>Invite accounts and manage active roles securely.</span></li>
+                <li><b>Staff & Caseloads</b><span>Teacher classes, special-educator access, therapist caseloads and student profiles.</span></li>
+                <li><b>Child Records</b><span>Identity, class, support, family, care-team and record summary.</span></li>
+                <li><b>Classes & Students</b><span>Class structure, enrolment and class-staff relationships.</span></li>
+                <li><b>Family Access</b><span>Link the correct parent account to the correct child and revoke access when required.</span></li>
+                <li><b>Care + documents + schedule</b><span>Appointments, therapy, secure records and institutional scheduling.</span></li>
+              </ul>
+            </section>
+          </div>
+
+          <div class="medical-deepdive reveal">
+            <div class="medical-copy">
+              <span class="kicker">LOW-COST CARE DISCOVERY</span>
+              <h4>“Cheapest medical help” became a real search system — not a static directory.</h4>
+              <p>ANTAR’s Medical Help Near Me is designed around the real care-search burden faced by parents of children with special needs. It uses location-aware search to surface relevant healthcare, therapy and support options, then ranks lower-cost/public options ahead of private care when that information can be inferred responsibly.</p>
+            </div>
+            <div class="medical-grid">
+              <div><b>Needs</b><span>Hospitals & emergency · child specialists · speech/OT/PT · psychology & behaviour · audiology · diagnostics · pharmacy · assistive devices.</span></div>
+              <div><b>Cost logic</b><span>Government/public facilities rank first, likely-public options next, unknown-cost providers after that, and private providers last.</span></div>
+              <div><b>Location</b><span>Use current location or search another locality/PIN; choose a 2, 5, 10, 20 or 30 km radius.</span></div>
+              <div><b>Action</b><span>Call, open directions, view details and save useful options rather than only reading a list.</span></div>
+              <div><b>Government support</b><span>UDID/disability certificate · RBSK/early intervention · ADIP assistive devices · Niramaya insurance · inclusive education · state/UT schemes.</span></div>
+              <div><b>Safety</b><span>Cost is presented as public/likely low-cost/private/unknown rather than inventing fees the source does not publish.</span></div>
             </div>
           </div>
-          <div class="browser">
-            <div class="browser-bar">
-              <div class="traffic"><i></i><i></i><i></i></div>
-              <span>ANTAR / LIVE</span>
-              <a href="https://reetadevisipaya-del.github.io/ANTAR/" target="_blank" rel="noreferrer">Open full site ↗</a>
-            </div>
-            <div class="browser-body">
-              <iframe src="https://reetadevisipaya-del.github.io/ANTAR/" title="Live ANTAR product" loading="lazy"></iframe>
-            </div>
+        </div>
+
+        <div class="evaluation reveal">
+          <div>
+            <span class="kicker">EVALUATION LENS</span>
+            <h4>Testing the information architecture through real tasks.</h4>
           </div>
-        </section>
-
-        <section class="system shell">
-          <div class="system-head reveal">
-            <span class="eyebrow">ACTUAL SYSTEM ARCHITECTURE</span>
-            <h4>One child context.<br>Four distinct jobs.</h4>
+          <div class="eval-items">
+            <div><b>01</b><span>Find today's school update</span><em>task clarity</em></div>
+            <div><b>02</b><span>Locate an important care record</span><em>findability</em></div>
+            <div><b>03</b><span>Contact the assigned professional</span><em>communication friction</em></div>
+            <div><b>04</b><span>Find appropriate nearby support</span><em>decision support</em></div>
           </div>
-
-          <div class="system-layout reveal">
-            <aside class="system-nav">
-              <button class="active" data-system-tab="parent"><span>01</span>Parent</button>
-              <button data-system-tab="staff"><span>02</span>Staff</button>
-              <button data-system-tab="admin"><span>03</span>Admin</button>
-              <button data-system-tab="medical"><span>04</span>Medical help</button>
-            </aside>
-
-            <div class="system-visual">
-              <div class="system-screen active" data-system-screen="parent">
-                <div class="app-shell">
-                  <aside><strong>ANTAR</strong><span class="active">Home</span><span>My Child</span><span>Daily Report</span><span>Homework</span><span>Attendance</span><span>Health & Therapy</span><span>Documents</span><span>Communication</span><span>Medical Help</span></aside>
-                  <main>
-                    <div class="app-title"><small>PARENT DASHBOARD</small><h5>My Child</h5><p>School, therapy, records and care-team updates in one place.</p></div>
-                    <div class="app-stats"><div><small>ATTENDANCE</small><b>View</b></div><div><small>HOMEWORK</small><b>Today</b></div><div><small>CARE EVENT</small><b>Next</b></div><div><small>UPDATES</small><b>0</b></div></div>
-                    <div class="app-panels"><div><small>DAILY SCHOOL REPORT</small><p>Latest learning and wellbeing update.</p></div><div><small>ASSIGNED STAFF</small><p>Teacher · special educator · therapist</p></div></div>
-                  </main>
-                </div>
-                <div class="screen-note"><span>PARENT PORTAL</span><p>Designed around “what do I need to understand about my child today?”</p></div>
-              </div>
-
-              <div class="system-screen" data-system-screen="staff">
-                <div class="app-shell">
-                  <aside><strong>ANTAR</strong><span class="active">Student Overview</span><span>Attendance</span><span>Daily Report</span><span>Homework</span><span>Records</span><span>Care</span><span>Parent Message</span></aside>
-                  <main>
-                    <div class="app-title"><small>STUDENT OVERVIEW</small><h5>Learning + care</h5><p>Attendance, records, care events and parent communication.</p></div>
-                    <div class="app-stats"><div><small>ATTENDANCE</small><b>Mark</b></div><div><small>REPORT</small><b>Add</b></div><div><small>HOMEWORK</small><b>Add</b></div><div><small>RECORDS</small><b>Upload</b></div></div>
-                    <div class="app-panels"><div><small>UPCOMING THERAPY</small><p>Care events alongside school context.</p></div><div><small>PARENT MESSAGE</small><p>Open child-specific communication.</p></div></div>
-                  </main>
-                </div>
-                <div class="screen-note"><span>STAFF PORTAL</span><p>The professional works from the student context rather than switching systems.</p></div>
-              </div>
-
-              <div class="system-screen" data-system-screen="admin">
-                <div class="app-shell">
-                  <aside><strong>ANTAR</strong><span class="active">Overview</span><span>People & Access</span><span>Staff & Caseloads</span><span>Child Records</span><span>Classes & Students</span><span>Schedule</span><span>Documents</span><span>Care</span></aside>
-                  <main>
-                    <div class="app-title"><small>INSTITUTE ADMIN</small><h5>Access is part of the product.</h5><p>Manage the relationships between people, roles and child records.</p></div>
-                    <div class="app-stats"><div><small>PEOPLE</small><b>Access</b></div><div><small>CHILDREN</small><b>Records</b></div><div><small>PARENT LINKS</small><b>Assign</b></div><div><small>STAFF</small><b>Caseloads</b></div></div>
-                    <div class="app-panels"><div><small>PEOPLE & ACCESS</small><p>Invite accounts and manage roles securely.</p></div><div><small>CARE COORDINATION</small><p>Appointments, therapy and therapist assignment.</p></div></div>
-                  </main>
-                </div>
-                <div class="screen-note"><span>ADMIN SYSTEM</span><p>Controls who can see what and how each parent, child and professional is connected.</p></div>
-              </div>
-
-              <div class="system-screen medical-screen" data-system-screen="medical">
-                <div class="medical-map">
-                  <div class="road a"></div><div class="road b"></div><div class="road c"></div>
-                  <span class="map-pin p1">+</span><span class="map-pin p2">+</span><span class="map-pin p3">+</span>
-                  <div class="map-summary"><small>LOW-COST CARE SEARCH</small><b>Nearby support</b><p>Public and likely lower-cost options prioritised.</p></div>
-                </div>
-                <div class="medical-results">
-                  <div class="search-box">Search city, locality or PIN…</div>
-                  <div class="filter-row"><span>Hospitals</span><span>Child specialists</span><span>Speech / OT / PT</span><span>Psychology</span></div>
-                  <div class="result-row"><i>PUBLIC</i><b>Government / public facility</b><p>Prioritised for subsidised or lower-cost care.</p></div>
-                  <div class="result-row"><i>SUPPORT</i><b>Government schemes</b><p>UDID · RBSK · ADIP · Niramaya · inclusive education.</p></div>
-                  <div class="result-row"><i>RADIUS</i><b>2 · 5 · 10 · 20 · 30 km</b><p>Current location or another area.</p></div>
-                </div>
-                <div class="screen-note"><span>MEDICAL HELP NEAR ME</span><p>Decision support for affordable and accessible care — not just a directory.</p></div>
-              </div>
-            </div>
-
-            <div class="system-copy">
-              <div class="copy-panel active" data-system-copy="parent"><span>PARENT</span><h5>Daily visibility first.</h5><p>My Child, attendance, daily reports, homework, appointments, therapy, medical records, documents, communication and nearby care.</p></div>
-              <div class="copy-panel" data-system-copy="staff"><span>STAFF</span><h5>One student, one workspace.</h5><p>Attendance, daily reports, homework, records, care and parent communication stay attached to the same child context.</p></div>
-              <div class="copy-panel" data-system-copy="admin"><span>ADMIN</span><h5>Relationships become infrastructure.</h5><p>People & Access, child records, classes, family access, staff caseloads, schedule and care coordination.</p></div>
-              <div class="copy-panel" data-system-copy="medical"><span>MEDICAL HELP</span><h5>Cost and distance shape access.</h5><p>Location-aware discovery ranks government / likely public care before unknown and private providers without inventing fees.</p></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="research-strip shell">
-          <div class="research-heading reveal">
-            <span class="eyebrow">RESEARCH / PARENT NEEDS</span>
-            <h4>What should a parent portal actually remove from a parent’s mental load?</h4>
-            <p>Ongoing parent-needs research connected to SOREM is informing the system. The paper is in preparation.</p>
-          </div>
-          <div class="research-rows reveal">
-            <div><small>METHODS</small><span>Parent-needs interviews · stakeholder interviews · communication mapping · requirement clustering</span></div>
-            <div><small>INTERVIEW QUESTIONS</small><span>What information is hardest to track? How do you currently communicate with staff? Which records need to stay together? What makes affordable care difficult to find?</span></div>
-            <div><small>ANALYSIS</small><span>Thematic analysis · frequency summaries of recurring needs · affinity clustering · later usability task metrics + SUS</span></div>
-          </div>
-        </section>
+        </div>
       </article>
 
-      <!-- NOVA -->
-      <article class="case nova">
-        <div class="case-header shell reveal">
-          <div class="case-index">02</div>
-          <div class="case-title">
-            <span class="case-kicker">AI UX · BEHAVIOUR · PRODUCT DESIGN</span>
+      <article class="case-study" id="nova">
+        <div class="case-head">
+          <div class="case-index reveal">02</div>
+          <div class="case-title reveal">
+            <div class="chips"><span>AI UX</span><span>PRODUCT DESIGN</span><span>BEHAVIOUR</span></div>
             <h3>NOVA</h3>
-            <p>An AI-assisted focus planner designed to reduce planning friction instead of adding to it.</p>
+            <p>An AI focus planner exploring how planning tools can reduce cognitive load instead of adding to it.</p>
           </div>
-          <div class="case-actions">
-            <a class="btn light" href="https://reetadevisipaya-del.github.io/NOVA-AI/" target="_blank" rel="noreferrer">Visit live product ↗</a>
-            <a class="btn outline-light" href="https://www.figma.com/design/QeuILgYHOW9k4EMzk87Aip" target="_blank" rel="noreferrer">Figma ↗</a>
-            <a class="btn outline-light" href="https://drive.google.com/drive/folders/179tTl0QSkX8tbBwXfhj86xZnyuPMw8Jp" target="_blank" rel="noreferrer">Research Drive ↗</a>
+          <div class="case-links reveal">
+            <a class="visit" href="https://reetadevisipaya-del.github.io/NOVA-AI/" target="_blank" rel="noreferrer">Visit site ↗</a>
+            <a href="https://www.figma.com/design/QeuILgYHOW9k4EMzk87Aip" target="_blank" rel="noreferrer">Figma ↗</a>
+            <a href="https://drive.google.com/drive/folders/179tTl0QSkX8tbBwXfhj86xZnyuPMw8Jp" target="_blank" rel="noreferrer">Research Drive ↗</a>
+            <a href="https://github.com/reetadevisipaya-del/NOVA-AI" target="_blank" rel="noreferrer">GitHub ↗</a>
           </div>
         </div>
 
-        <section class="nova-hero shell reveal">
-          <div class="nova-frame">
-            <img src="./assets/nova-case.png" alt="Actual NOVA interface from Figma" />
-            <span>ACTUAL FIGMA / PRODUCT UI</span>
+        <div class="research-summary">
+          <div class="research-question reveal">
+            <span class="kicker">BEHAVIOURAL PROBLEM</span>
+            <h4>When a user is already overwhelmed, a complex productivity system can become one more thing to manage.</h4>
           </div>
-          <div class="nova-copy">
-            <span class="technical inverse">BEHAVIOURAL PROBLEM</span>
-            <h4>Planning fatigue.<br>Decision overload.<br>Too much “productivity”.</h4>
-            <p>NOVA treats productivity as a behavioural problem: priority ambiguity, context switching, schedule change and trust in AI recommendations.</p>
+          <div class="meta-grid reveal">
+            <div><b>Focus</b><span>Planning friction · prioritisation · attention</span></div>
+            <div><b>Design goal</b><span>Lower cognitive overhead while preserving user control</span></div>
+            <div><b>Core flow</b><span>Today · Calendar · Tasks · Projects · Inbox · Focus</span></div>
+            <div><b>Design + documentation</b><span>Figma · structured NOVA research Drive · interaction system · high-fidelity UI</span></div>
           </div>
-        </section>
+        </div>
 
-        <section class="nova-live shell reveal">
-          <div class="live-header">
-            <div><span class="eyebrow inverse">INTERACTIVE BUILD</span><h4>Try the actual planner.</h4></div>
-            <p>Onboarding → planner setup → Today view → tasks → Focus Mode → assistant.</p>
-          </div>
-          <div class="browser dark-browser">
-            <div class="browser-bar">
-              <div class="traffic"><i></i><i></i><i></i></div>
-              <span>NOVA / LIVE</span>
-              <a href="https://reetadevisipaya-del.github.io/NOVA-AI/" target="_blank" rel="noreferrer">Open full site ↗</a>
-            </div>
-            <div class="browser-body">
-              <iframe src="https://reetadevisipaya-del.github.io/NOVA-AI/" title="Live NOVA AI Focus Planner" loading="lazy"></iframe>
-            </div>
-          </div>
-        </section>
+        <div class="real-image reveal">
+          <img src="./assets/nova-case.png" alt="Actual NOVA AI Focus Planner Figma case-study interface" />
+          <div class="image-note">ACTUAL FIGMA INTERFACE / NOVA</div>
+        </div>
 
-        <section class="nova-flow shell reveal">
-          <div><span>01</span><b>Understand</b><small>Routine · goal · predictability · realistic focus capacity</small></div>
-          <div><span>02</span><b>Plan</b><small>Tasks + deadlines + fixed commitments + focus capacity</small></div>
-          <div><span>03</span><b>Explain</b><small>Why this task? Why this order? What can move?</small></div>
-          <div><span>04</span><b>Focus</b><small>One task, one timer, fewer competing decisions</small></div>
-          <div><span>05</span><b>Adapt</b><small>Re-plan while keeping the user in control</small></div>
-        </section>
+        <div class="finding-title reveal"><span>Research-led design logic</span><h4>Behavioural insight → product response</h4></div>
+        <div class="finding-grid">
+          <div class="finding reveal">
+            <span>N01</span>
+            <h5>Priority is often unclear when everything looks urgent.</h5>
+            <p>The interface needs to make “what matters now” legible without forcing the user to manually compare every task.</p>
+            <div class="mapping"><b>FEATURE</b><em>Today dashboard + priority detail + AI suggestion.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>N02</span>
+            <h5>Plans break when the day changes.</h5>
+            <p>A useful planner should help a user understand what a new meeting or deadline affects instead of silently reshuffling the schedule.</p>
+            <div class="mapping"><b>FEATURE</b><em>Change Impact + Adaptive Replan with explanation.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>N03</span>
+            <h5>Focus requires protection from context switching.</h5>
+            <p>During deep work, secondary information should disappear rather than compete for attention.</p>
+            <div class="mapping"><b>FEATURE</b><em>Dedicated Focus Mode with one task and one next step.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>N04</span>
+            <h5>AI needs visible reasoning and user control.</h5>
+            <p>Recommendations become more trustworthy when the user can see why the system suggested something and choose whether to accept it.</p>
+            <div class="mapping"><b>FEATURE</b><em>“Why this matters?” rationale + accept/adjust controls.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>N05</span>
+            <h5>Planning lives across different mental models.</h5>
+            <p>Some users think in time, some in projects, some in tasks and some in incoming commitments.</p>
+            <div class="mapping"><b>FEATURE</b><em>Calendar · Projects · Tasks · Inbox · Search connected by one system.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>N06</span>
+            <h5>Automation should remain adjustable.</h5>
+            <p>The system should support different comfort levels with AI rather than assume full automation is always desirable.</p>
+            <div class="mapping"><b>FEATURE</b><em>Recommendation behaviour + automation-level settings.</em></div>
+          </div>
+        </div>
 
-        <section class="research-strip shell dark-strip">
-          <div class="research-heading reveal">
-            <span class="eyebrow inverse">RESEARCH / COGNITIVE LOAD</span>
-            <h4>Can AI reduce planning work without reducing agency?</h4>
+        <div class="feature-gallery">
+          <div class="gallery-copy reveal">
+            <span class="kicker">ACTUAL UI</span>
+            <h4>From planning to reflection.</h4>
+            <p>The design system carries the same visual hierarchy through planning, task focus, schedule changes and reflective journaling.</p>
           </div>
-          <div class="research-rows reveal">
-            <div><small>QUESTIONS</small><span>How do users manage overload? What breaks when a schedule changes? When does AI feel helpful versus intrusive?</span></div>
-            <div><small>USABILITY TASKS</small><span>Build a realistic day · add a fixed event · understand priority rationale · enter Focus Mode · act on AI suggestions</span></div>
-            <div><small>MEASUREMENT</small><span>Task success · time on task · clarity / helpfulness ratings · trust in AI · SUS or short post-task usability ratings</span></div>
+          <div class="gallery-img reveal">
+            <img src="./assets/nova-journal.png" alt="Actual NOVA journal interface from Figma" loading="lazy" />
           </div>
-        </section>
+        </div>
+
+        <div class="evaluation reveal">
+          <div>
+            <span class="kicker">USABILITY QUESTIONS</span>
+            <h4>Does the AI reduce work, or merely move it around?</h4>
+          </div>
+          <div class="eval-items">
+            <div><b>01</b><span>Create a realistic focus plan</span><em>planning effort</em></div>
+            <div><b>02</b><span>Understand a schedule change</span><em>mental-model clarity</em></div>
+            <div><b>03</b><span>Act on an AI suggestion</span><em>trust + agency</em></div>
+            <div><b>04</b><span>Move between calendar and tasks</span><em>flow continuity</em></div>
+          </div>
+        </div>
       </article>
 
-      <!-- AUTISM -->
-      <article class="case autism">
-        <div class="case-header shell reveal">
-          <div class="case-index">03</div>
-          <div class="case-title">
-            <span class="case-kicker">AUTISM · ACCESSIBILITY · EXPERIMENTAL UX</span>
+      <article class="case-study" id="autism">
+        <div class="case-head">
+          <div class="case-index reveal">03</div>
+          <div class="case-title reveal">
+            <div class="chips"><span>ACADEMIC UXR</span><span>AUTISM</span><span>ACCESSIBILITY</span></div>
             <h3>Autism-adapted learning</h3>
-            <p>Development and empirical evaluation of an autism-specific web-based educational interface.</p>
+            <p>A stakeholder-informed comparative study of conventional and autism-adapted web learning interfaces.</p>
           </div>
-          <div class="case-actions">
-            <a class="btn primary" href="https://reetadevisipaya-del.github.io/autism-adapted-learning-study/" target="_blank" rel="noreferrer">Visit research build ↗</a>
-            <a class="btn secondary" href="https://github.com/reetadevisipaya-del/autism-adapted-learning-study" target="_blank" rel="noreferrer">GitHub ↗</a>
+          <div class="case-links reveal">
+            <a class="visit" href="https://reetadevisipaya-del.github.io/autism-adapted-learning-study/" target="_blank" rel="noreferrer">Visit site ↗</a>
+            <a href="https://github.com/reetadevisipaya-del/autism-adapted-learning-study" target="_blank" rel="noreferrer">GitHub ↗</a>
           </div>
         </div>
 
-        <section class="compare shell reveal">
-          <div class="compare-copy">
-            <span class="technical">EXPERIMENTAL DESIGN / EV-1.0</span>
-            <h4>Same task.<br><em>Different interface.</em></h4>
-            <p>The conventional condition remains a credible educational baseline. The adapted condition changes presentation — not learning content, scoring or task logic.</p>
+        <div class="research-summary">
+          <div class="research-question reveal">
+            <span class="kicker">CORE RESEARCH QUESTION</span>
+            <h4>Can an autism-adapted educational interface improve independent task completion and perceived usability without changing the learning task itself?</h4>
           </div>
-          <div class="conditions">
-            <div class="condition one"><small>CONDITION A</small><b>Conventional</b><div class="mini-ui conventional-ui"><i></i><i></i><i></i><div></div><span></span><span></span><button>Continue</button></div></div>
-            <div class="condition two"><small>CONDITION B</small><b>Autism-adapted</b><div class="mini-ui adapted-ui"><i></i><div></div><span></span><button>Continue</button></div></div>
+          <div class="meta-grid reveal">
+            <div><b>Phase 1</b><span>Literature review + needs assessment + stakeholder input</span></div>
+            <div><b>Phase 2</b><span>Requirements synthesis + adapted interface development</span></div>
+            <div><b>Phase 3</b><span>Controlled comparison of two interface conditions</span></div>
+            <div><b>Measures</b><span>Completion · time · errors · assistance · usability · gaze</span></div>
           </div>
-        </section>
+        </div>
 
-        <section class="immersive shell reveal">
-          <div class="immersive-copy">
-            <span class="technical">LIVE RESEARCH BUILD</span>
-            <h4>Inspect the actual experiment.</h4>
-            <p>Researcher setup, participant flow, optional WebGazer, calibration, validation, lessons, questions and results are all part of the deployed build.</p>
-            <div class="micro-list">
-              <span>9-point calibration</span>
-              <span>5-target validation</span>
-              <span>3 lessons</span>
-              <span>10 questions</span>
-            </div>
-          </div>
-          <div class="browser">
-            <div class="browser-bar">
-              <div class="traffic"><i></i><i></i><i></i></div>
-              <span>AUTISM STUDY / LIVE</span>
-              <a href="https://reetadevisipaya-del.github.io/autism-adapted-learning-study/" target="_blank" rel="noreferrer">Open full site ↗</a>
-            </div>
-            <div class="browser-body">
-              <iframe src="https://reetadevisipaya-del.github.io/autism-adapted-learning-study/" title="Live autism-adapted learning study" loading="lazy"></iframe>
-            </div>
-          </div>
-        </section>
+        <div class="publication-strip publication-autism reveal">
+          <span>PUBLICATION PATHWAY</span>
+          <div><b>Research publication in progress</b><p>The work is structured as two connected papers: <strong>Paper 1 — needs assessment + interface development</strong>, followed by <strong>Paper 2 — controlled comparative evaluation of the autism-adapted and conventional interfaces</strong>.</p></div>
+        </div>
 
-        <section class="evidence shell">
-          <div class="evidence-text reveal">
-            <span class="eyebrow">PHASE 1 / NEEDS ASSESSMENT</span>
-            <h4>Research before adaptation.</h4>
-            <p>Phase 1 focuses on sensory, visual, navigation, communication, interaction, accessibility and personalisation needs before the interface is refined.</p>
-            <div class="phase-timeline">
-              <div><span>01</span><b>Literature</b></div>
-              <div><span>02</span><b>Needs assessment</b></div>
-              <div><span>03</span><b>Requirements</b></div>
-              <div><span>04</span><b>Adapted build</b></div>
-              <div><span>05</span><b>Comparison</b></div>
+        <div class="autism-evidence-grid">
+          <div class="evidence-copy reveal">
+            <span class="kicker">FIELDWORK EVIDENCE / SOREM</span>
+            <h4>Needs assessment before interface refinement.</h4>
+            <p>
+              Phase 1 focused on how professionals supporting autistic learners describe sensory,
+              visual, navigation, communication, interaction and personalisation requirements in
+              digital learning environments.
+            </p>
+            <div class="evidence-points">
+              <div><b>What I looked for</b><span>Where learners lose the next action, what competes for attention, what becomes confusing, and when adult support is needed.</span></div>
+              <div><b>Why it mattered</b><span>The goal was to convert observations into traceable UI requirements rather than use a generic “autism-friendly” aesthetic.</span></div>
+              <div><b>Field proof</b><span>Signed and stamped SOREM acknowledgement documenting the research visit and needs-assessment activity.</span></div>
             </div>
           </div>
-          <figure class="evidence-doc reveal">
-            <img src="./assets/sorem-acknowledgement.jpg" alt="Original signed and stamped SOREM research acknowledgement" />
-            <figcaption><b>SOREM FIELD EVIDENCE</b><span>Original signed + stamped participation acknowledgement</span></figcaption>
+          <figure class="proof reveal">
+            <img src="./assets/sorem-acknowledgement.jpg" alt="Original signed and stamped SOREM Research Participation Acknowledgement" loading="lazy" />
+            <figcaption>Original signed + stamped research acknowledgement · SOREM, Chandigarh</figcaption>
           </figure>
-        </section>
+        </div>
 
-        <section class="research-strip shell">
-          <div class="research-heading reveal">
-            <span class="eyebrow">RESEARCH / SPECIAL-NEEDS ACCESSIBILITY</span>
-            <h4>Needs assessment + development first. Controlled comparison second.</h4>
-            <p>Two connected papers are in progress: needs assessment/development, followed by comparative evaluation.</p>
+        <div class="finding-title reveal"><span>Findings → requirements</span><h4>The recurring needs became controlled design changes.</h4></div>
+        <div class="finding-grid">
+          <div class="finding reveal">
+            <span>A01</span>
+            <h5>Predictability reduces interaction uncertainty.</h5>
+            <p>Users should not have to relearn button placement or screen structure on every step.</p>
+            <div class="mapping"><b>UI REQUIREMENT</b><em>Stable navigation, repeated control placement and explicit next steps.</em></div>
           </div>
-          <div class="research-rows reveal">
-            <div><small>INTERVIEW THEMES</small><span>Digital-learning use · what works · barriers · sensory load · navigation · pacing · feedback · attention · AAC · parent involvement · personalisation · privacy</span></div>
-            <div><small>DEPENDENT VARIABLES</small><span>Independent completion · time / time-to-target · error count · assistance · SUS · preference · exploratory gaze + calibration quality</span></div>
-            <div><small>PLANNED STATISTICS</small><span>Descriptive statistics · normality checks · paired t-test when assumptions hold · Wilcoxon signed-rank otherwise · effect sizes · thematic analysis</span></div>
+          <div class="finding reveal">
+            <span>A02</span>
+            <h5>Visual calm helps protect task relevance.</h5>
+            <p>Decorative elements can compete with the learning task when visual density is too high.</p>
+            <div class="mapping"><b>UI REQUIREMENT</b><em>Muted palette, reduced decoration and clearly separated task regions.</em></div>
           </div>
-        </section>
+          <div class="finding reveal">
+            <span>A03</span>
+            <h5>Hierarchy must make the current task obvious.</h5>
+            <p>The interface should quickly answer: where am I, what am I doing and what happens next?</p>
+            <div class="mapping"><b>UI REQUIREMENT</b><em>Strong title hierarchy, progress orientation and one dominant next action.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>A04</span>
+            <h5>User control matters more than visual novelty.</h5>
+            <p>Unexpected motion or ambiguous feedback can add unnecessary interaction burden.</p>
+            <div class="mapping"><b>UI REQUIREMENT</b><em>Minimal motion, literal instructions and immediate non-startling feedback.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>A05</span>
+            <h5>Accessibility needs structure, not simplification alone.</h5>
+            <p>Reducing content is not enough; the learner needs content to be sequenced and grouped meaningfully.</p>
+            <div class="mapping"><b>UI REQUIREMENT</b><em>Sequential chunking, generous spacing and explicit progress.</em></div>
+          </div>
+          <div class="finding reveal">
+            <span>A06</span>
+            <h5>A fair study requires a credible control.</h5>
+            <p>The conventional condition must not be intentionally poor. Otherwise the study compares a good interface with a bad one rather than isolates the adaptation.</p>
+            <div class="mapping"><b>EXPERIMENTAL RULE</b><em>Same content, questions, scoring, functions and task sequence in both conditions.</em></div>
+          </div>
+        </div>
+
+        <div class="live-panel reveal">
+          <div class="browser-top">
+            <div class="browser-dots"><i></i><i></i><i></i></div>
+            <span>LIVE RESEARCH PROTOTYPE</span>
+            <a href="https://reetadevisipaya-del.github.io/autism-adapted-learning-study/" target="_blank" rel="noreferrer">Open full site ↗</a>
+          </div>
+          <div class="browser-stage">
+            <iframe src="https://reetadevisipaya-del.github.io/autism-adapted-learning-study/" title="Live autism-adapted learning research prototype" loading="lazy"></iframe>
+            <a class="iframe-fallback" href="https://reetadevisipaya-del.github.io/autism-adapted-learning-study/" target="_blank" rel="noreferrer">If preview is blocked, open research site ↗</a>
+          </div>
+        </div>
+
+        <div class="controlled-study">
+          <div class="study-col reveal">
+            <span class="kicker">HELD CONSTANT</span>
+            <h4>What does not change</h4>
+            <ul>
+              <li>Learning facts and lesson content</li>
+              <li>Questions, correct answers and scoring</li>
+              <li>Functions, destinations and task sequence</li>
+              <li>Feedback timing and study procedure</li>
+              <li>Device / browser / facilitator conditions</li>
+            </ul>
+          </div>
+          <div class="study-col accent reveal">
+            <span class="kicker">MANIPULATED</span>
+            <h4>What the adapted UI changes</h4>
+            <ul>
+              <li>Colour palette and visual intensity</li>
+              <li>Typography, whitespace and density</li>
+              <li>Decoration and task-region separation</li>
+              <li>Prominence of progress and orientation</li>
+              <li>Responsive arrangement of the same content</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="measurement">
+          <div class="measurement-copy reveal">
+            <span class="kicker">EVALUATION FRAMEWORK</span>
+            <h4>Measure behaviour first — then ask why.</h4>
+            <p>The comparison is built to connect observable task performance with perceived usability and exploratory attention data.</p>
+          </div>
+          <div class="measurement-grid">
+            <div class="measure reveal"><span>PRIMARY</span><b>Independent task completion</b><p>Whether a child completes the task without directional or physical help.</p></div>
+            <div class="measure reveal"><span>SECONDARY</span><b>Time · errors · assistance</b><p>Efficiency and the amount of support needed across conditions.</p></div>
+            <div class="measure reveal"><span>PERCEIVED UX</span><b>Usability + preference</b><p>Short post-condition usability and retrospective feedback.</p></div>
+            <div class="measure reveal"><span>EXPLORATORY</span><b>Webcam gaze</b><p>Calibration quality, time to task-relevant gaze and proportional attention to defined areas.</p></div>
+          </div>
+        </div>
       </article>
     </section>
 
-    <!-- SOCH -->
-    <section class="fieldwork" id="fieldwork">
-      <div class="fieldwork-head shell reveal">
-        <div class="eyebrow">02 / COMMUNITY RESEARCH EXPERIENCE</div>
-        <h2>SOCH NGO</h2>
-        <p>Community psychology made one principle permanent in my work: <em>understand the setting before designing the solution.</em></p>
+    <section class="experience shell" id="experience">
+      <div class="section-code reveal">02 / RESEARCH FIELD EXPERIENCE</div>
+      <div class="experience-head reveal">
+        <div>
+          <span class="eyebrow"><span></span>COMMUNITY RESEARCH × PSYCHOLOGY × FIELDWORK</span>
+          <h2>SOCH NGO</h2>
+        </div>
+        <div class="experience-meta">
+          <div><b>Research focus</b><span>Community needs assessment · behavioural observation · field data</span></div>
+          <div><b>Period</b><span>19 May 2026 — 19 June 2026</span></div>
+          <div><b>Setting</b><span>Community-based fieldwork · Aligarh, Uttar Pradesh</span></div>
+        </div>
       </div>
 
-      <div class="fieldwork-layout shell">
-        <div class="fieldwork-copy reveal">
-          <div class="field-meta"><span>19 MAY — 19 JUNE 2026</span><span>ALIGARH, UTTAR PRADESH</span></div>
-          <h3>Field research, not just outreach.</h3>
-          <p>My internship included community needs assessment, behavioural observation, beneficiary interaction, field data collection and report preparation under professional supervision.</p>
-          <div class="field-lines">
-            <div><small>01</small><b>Observe context</b><span>Environment · access · participation · behaviour</span></div>
-            <div><small>02</small><b>Collect evidence</b><span>Beneficiary interaction · observation · field data</span></div>
-            <div><small>03</small><b>Identify needs</b><span>Recurring barriers · support gaps · priorities</span></div>
-            <div><small>04</small><b>Respond</b><span>Mental-health, menstrual-health, blood-donation and educational initiatives</span></div>
+      <div class="experience-layout">
+        <div class="experience-story reveal">
+          <span class="kicker">RESEARCH EXPERIENCE</span>
+          <h3>Understanding needs before proposing solutions.</h3>
+          <p>
+            At SOCH NGO, my work was rooted in community settings rather than controlled lab conditions.
+            I was involved in community needs assessment, field observation, beneficiary interaction,
+            behavioural observation, data collection and report preparation. The experience taught me how
+            to move from what people say and do in context to clearer needs, priorities and practical interventions.
+          </p>
+
+          <div class="experience-work">
+            <div><b>01 · Community needs assessment</b><span>Observed community contexts, interacted with beneficiaries and identified recurring needs, access barriers and priorities before planning activities.</span></div>
+            <div><b>02 · Field observation</b><span>Used direct observation and beneficiary interaction to understand behaviour, participation, environmental constraints and how people responded to support.</span></div>
+            <div><b>03 · Data collection</b><span>Supported collection of field information and organised observations so they could contribute to reporting and programme decisions.</span></div>
+            <div><b>04 · Behavioural insight</b><span>Applied a psychology lens to behaviour, communication, motivation and engagement while working under professional supervision.</span></div>
+            <div><b>05 · Synthesis & reporting</b><span>Contributed to report preparation and converting field information into concise documentation of needs, activities and observations.</span></div>
+            <div><b>06 · Community intervention context</b><span>Applied this understanding while supporting mental-health awareness, menstrual-health and blood-donation drives, and educational initiatives for children with special needs and underserved children in Aligarh communities.</span></div>
+          </div>
+
+          <div class="feature-map research-process-map">
+            <div class="feature-map-head">
+              <span>FIELD RESEARCH PROCESS</span>
+              <h4>Observe → collect → interpret → respond.</h4>
+            </div>
+            <div class="feature-rows">
+              <div><b>Observe context</b><span>Community environment · access constraints · behaviour · participation</span></div>
+              <div><b>Collect evidence</b><span>Beneficiary interaction · behavioural observation · field information</span></div>
+              <div><b>Identify needs</b><span>Recurring concerns · barriers · support gaps · priority groups</span></div>
+              <div><b>Synthesise</b><span>Organise observations into findings and reportable themes</span></div>
+              <div><b>Respond</b><span>Support awareness, educational and community-focused initiatives</span></div>
+              <div><b>Reflect</b><span>Evaluate what the setting revealed about access, trust and real-world feasibility</span></div>
+            </div>
+          </div>
+
+          <div class="experience-insight">
+            <span>HOW THIS SHAPED MY UX RESEARCH APPROACH</span>
+            <p>
+              This internship is one of the reasons I now begin product work with needs assessment.
+              It showed me that behaviour only makes sense in context: family resources, environment,
+              access, trust, communication and existing support systems all change how a person experiences
+              a service. In my current accessibility and UX work, I carry that same approach forward —
+              study the environment first, identify the real barriers, then translate the evidence into design requirements.
+            </p>
           </div>
         </div>
 
-        <figure class="certificate reveal">
-          <button type="button" data-certificate-open>
-            <img src="./assets/soch-internship-certificate-full.jpg" alt="Full SOCH NGO internship certificate" />
+        <figure class="certificate-card reveal">
+          <button class="certificate-open" type="button" data-certificate-open aria-label="Open full SOCH NGO internship certificate">
+            <img src="./assets/soch-internship-certificate-full.jpg" alt="SOCH NGO internship certificate for Samayra" loading="lazy" />
+            <span>Click to view full certificate</span>
           </button>
-          <figcaption><span>ORIGINAL CERTIFICATE</span><button type="button" data-certificate-open>Open full image ↗</button></figcaption>
+          <figcaption>
+            <div><b>Evidence of field experience</b><span>SOCH NGO internship certificate · psychological & social-welfare activities · May–June 2026</span></div>
+            <button class="certificate-text-button" type="button" data-certificate-open>View full certificate ↗</button>
+          </figcaption>
         </figure>
       </div>
+
+      <div class="certificate-note reveal">
+        <b>Documented research-related work</b>
+        <span>The certificate records community outreach, counselling-support initiatives, behavioural observation, mental-health awareness sessions, data collection, report preparation and beneficiary interaction under professional supervision.</span>
+      </div>
     </section>
 
-    <section class="methods shell">
-      <div class="eyebrow reveal">03 / METHOD STACK</div>
+    <div class="certificate-modal" data-certificate-modal aria-hidden="true" role="dialog" aria-modal="true" aria-label="SOCH NGO internship certificate">
+      <div class="certificate-modal-backdrop" data-certificate-close></div>
+      <div class="certificate-modal-panel">
+        <div class="certificate-modal-toolbar">
+          <div><b>SOCH NGO Internship Certificate</b><span>19 May 2026 — 19 June 2026</span></div>
+          <div class="certificate-modal-actions">
+            <a href="./assets/soch-internship-certificate-full.jpg" target="_blank" rel="noreferrer">Open full-resolution image ↗</a>
+            <button type="button" data-certificate-close aria-label="Close certificate">Close ×</button>
+          </div>
+        </div>
+        <div class="certificate-full-view">
+          <img src="./assets/soch-internship-certificate-full.jpg" alt="Full SOCH NGO internship certificate for Samayra" />
+        </div>
+      </div>
+    </div>
+
+    <section class="mission shell">
+      <div class="mission-card reveal">
+        <div class="mission-index">WHY I DO THIS</div>
+        <div class="mission-copy">
+          <h2>I want research to make technology <em>easier to live with.</em></h2>
+          <p>
+            I am especially passionate about accessibility for people with special needs. I want to work
+            on products where research is not just a presentation slide — it changes the interface, the
+            service and the everyday experience of the person using it.
+          </p>
+          <p>
+            What motivates me most is finding the small barriers that are easy to overlook: confusing
+            navigation, sensory overload, missing information, dependence on another person, or a system
+            that simply was not designed around the user's reality. My goal is to turn those observations
+            into evidence, insights and design decisions that genuinely improve access and independence.
+          </p>
+        </div>
+        <div class="mission-tags">
+          <span>Accessibility</span>
+          <span>Special-needs UX</span>
+          <span>Behavioural research</span>
+          <span>Inclusive education</span>
+          <span>Care systems</span>
+          <span>Evidence-led design</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="methods shell" id="methods">
+      <div class="section-code reveal">03 / METHODS</div>
       <div class="methods-head reveal">
-        <h2>Research methods should answer decisions.</h2>
-        <p>I use different evidence for discovery, behaviour, usability and comparative evaluation.</p>
+        <h2>Research toolkit</h2>
+        <p>I choose methods based on the decision that needs evidence — not because a method looks impressive in a case study.</p>
       </div>
-      <div class="methods-list reveal">
-        <div><small>DISCOVERY</small><b>Interviews · needs assessment · contextual observation</b></div>
-        <div><small>SYNTHESIS</small><b>Thematic analysis · affinity clustering · requirement mapping</b></div>
-        <div><small>USABILITY</small><b>Task success · time · errors · assistance · SUS</b></div>
-        <div><small>BEHAVIOUR</small><b>Attention · cognitive load · trust · predictability</b></div>
-        <div><small>INTERACTION DATA</small><b>Event logs · session data · WebGazer coordinates</b></div>
-        <div><small>COMPARISON</small><b>Descriptives · paired tests · effect sizes when appropriate</b></div>
-      </div>
-    </section>
-
-    <section class="mission">
-      <div class="mission-inner shell reveal">
-        <span class="eyebrow inverse">WHY I DO THIS</span>
-        <h2>I want research to make technology<br><em>easier to live with.</em></h2>
-        <p>I’m especially passionate about accessibility for people with special needs. I want to work on products where research changes the interface, the service and the everyday experience — not where research disappears after the presentation.</p>
+      <div class="methods-grid">
+        <div class="method reveal"><b>Qualitative</b><span>Interviews · needs assessment · retrospective feedback · synthesis</span></div>
+        <div class="method reveal"><b>Usability</b><span>Task completion · errors · assistance · time · SUS / perceived usability</span></div>
+        <div class="method reveal"><b>Behaviour</b><span>Attention · cognitive load · predictability · trust · decision friction</span></div>
+        <div class="method reveal"><b>Interaction data</b><span>Web event logging · browser data · gaze coordinates · CSV export</span></div>
+        <div class="method reveal"><b>Product</b><span>Information architecture · flows · role systems · prototypes · high-fidelity UI</span></div>
+        <div class="method reveal"><b>Build</b><span>Figma · React · Supabase · HTML/CSS/JS · GitHub Pages</span></div>
       </div>
     </section>
 
-    <section class="contact shell" id="contact">
-      <div class="contact-main reveal">
-        <span class="eyebrow">OPEN TO UX RESEARCH / PRODUCT RESEARCH</span>
-        <h2>Research first.<br><em>Design for real access.</em></h2>
-      </div>
-      <div class="contact-links reveal">
-        <a href="mailto:Smayra.sipaya2006@gmail.com"><small>Email</small><b>Smayra.sipaya2006@gmail.com ↗</b></a>
-        <a href="tel:+919625244683"><small>Phone</small><b>+91 96252 44683 ↗</b></a>
-        <a href="https://www.linkedin.com/in/smayrasipaaya/?isSelfProfile=true" target="_blank" rel="noreferrer"><small>LinkedIn</small><b>smayrasipaaya ↗</b></a>
-        <a href="https://github.com/reetadevisipaya-del" target="_blank" rel="noreferrer"><small>GitHub</small><b>@reetadevisipaya-del ↗</b></a>
+    <section class="contact shell">
+      <div class="contact-card reveal">
+        <div>
+          <span class="eyebrow"><span></span>OPEN TO UX RESEARCH / PRODUCT RESEARCH</span>
+          <h2>Research first.<br><em>Design for real access.</em></h2>
+        </div>
+        <div class="contact-list">
+          <a href="mailto:Smayra.sipaya2006@gmail.com"><span>Email</span><b>Smayra.sipaya2006@gmail.com ↗</b></a>
+          <a href="tel:+919625244683"><span>Phone</span><b>+91 96252 44683 ↗</b></a>
+          <a href="https://github.com/reetadevisipaya-del" target="_blank" rel="noreferrer"><span>GitHub</span><b>@reetadevisipaya-del ↗</b></a>
+          <a href="https://www.linkedin.com/in/smayrasipaaya/?isSelfProfile=true" target="_blank" rel="noreferrer"><span>LinkedIn</span><b>Smayra Sipaya ↗</b></a>
+        </div>
       </div>
     </section>
   </main>
 
   <footer class="shell">
     <span>SMAYRA · PSYCHOLOGY × UX RESEARCH</span>
-    <span>ACCESSIBILITY / SPECIAL NEEDS / EVIDENCE</span>
+    <span>2026</span>
     <a href="#top">Back to top ↑</a>
   </footer>
-
-  <div class="certificate-modal" data-certificate-modal aria-hidden="true" role="dialog" aria-modal="true">
-    <div class="certificate-backdrop" data-certificate-close></div>
-    <div class="certificate-panel">
-      <div class="certificate-toolbar">
-        <div><b>SOCH NGO Internship Certificate</b><span>Full original image</span></div>
-        <div><a href="./assets/soch-internship-certificate-full.jpg" target="_blank" rel="noreferrer">Open image ↗</a><button type="button" data-certificate-close>Close ×</button></div>
-      </div>
-      <div class="certificate-view"><img src="./assets/soch-internship-certificate-full.jpg" alt="Full SOCH NGO internship certificate" /></div>
-    </div>
-  </div>
 
   <script src="./app.js"></script>
 </body>

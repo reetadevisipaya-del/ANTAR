@@ -5,7 +5,7 @@
   const loader = q('.loader');
   window.addEventListener('load', () => setTimeout(() => loader?.classList.add('hidden'), 450));
 
-  const header = q('.site-header');
+  const header = q('.topbar') || q('.site-header');
   const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 24);
   onScroll();
   window.addEventListener('scroll', onScroll, {passive:true});
@@ -95,6 +95,26 @@
     if (workLink) workLink.setAttribute('data-active','true');
   }, {threshold:.25});
   projectSections.forEach(s => spy.observe(s));
+
+  const certModal = q('[data-certificate-modal]');
+  const openCertificate = () => {
+    if (!certModal) return;
+    certModal.classList.add('is-open');
+    certModal.setAttribute('aria-hidden','false');
+    document.body.classList.add('certificate-modal-open');
+    q('[data-certificate-close]', certModal)?.focus();
+  };
+  const closeCertificate = () => {
+    if (!certModal) return;
+    certModal.classList.remove('is-open');
+    certModal.setAttribute('aria-hidden','true');
+    document.body.classList.remove('certificate-modal-open');
+  };
+  qa('[data-certificate-open]').forEach(btn => btn.addEventListener('click', openCertificate));
+  qa('[data-certificate-close]').forEach(btn => btn.addEventListener('click', closeCertificate));
+  window.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && certModal?.classList.contains('is-open')) closeCertificate();
+  });
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduced) loader?.classList.add('hidden');

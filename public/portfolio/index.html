@@ -561,12 +561,13 @@
         </div>
 
         <figure class="certificate-card reveal">
-          <a href="./assets/soch-internship-certificate.webp" target="_blank" rel="noreferrer">
+          <button class="certificate-open" type="button" data-certificate-open aria-label="Open full SOCH NGO internship certificate">
             <img src="./assets/soch-internship-certificate.webp" alt="SOCH NGO internship certificate for Samayra" loading="lazy" />
-          </a>
+            <span>Click to view full certificate</span>
+          </button>
           <figcaption>
             <div><b>Evidence of field experience</b><span>SOCH NGO internship certificate · psychological & social-welfare activities · May–June 2026</span></div>
-            <a href="./assets/soch-internship-certificate.webp" target="_blank" rel="noreferrer">View certificate ↗</a>
+            <button class="certificate-text-button" type="button" data-certificate-open>View full certificate ↗</button>
           </figcaption>
         </figure>
       </div>
@@ -576,6 +577,22 @@
         <span>The certificate records community outreach, counselling-support initiatives, behavioural observation, mental-health awareness sessions, data collection, report preparation and beneficiary interaction under professional supervision.</span>
       </div>
     </section>
+
+    <div class="certificate-modal" data-certificate-modal aria-hidden="true" role="dialog" aria-modal="true" aria-label="SOCH NGO internship certificate">
+      <div class="certificate-modal-backdrop" data-certificate-close></div>
+      <div class="certificate-modal-panel">
+        <div class="certificate-modal-toolbar">
+          <div><b>SOCH NGO Internship Certificate</b><span>19 May 2026 — 19 June 2026</span></div>
+          <div class="certificate-modal-actions">
+            <a href="./assets/soch-internship-certificate.webp" target="_blank" rel="noreferrer">Open full-resolution image ↗</a>
+            <button type="button" data-certificate-close aria-label="Close certificate">Close ×</button>
+          </div>
+        </div>
+        <div class="certificate-full-view">
+          <img src="./assets/soch-internship-certificate.webp" alt="Full SOCH NGO internship certificate for Samayra" />
+        </div>
+      </div>
+    </div>
 
     <section class="mission shell">
       <div class="mission-card reveal">

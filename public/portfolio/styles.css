@@ -264,6 +264,58 @@ img{max-width:100%;display:block}
   font:600 8px "Space Grotesk";letter-spacing:.14em;color:var(--acid);text-transform:uppercase
 }
 .experience-insight p{margin:10px 0 0;color:#b1b4bd;font-size:13px;line-height:1.68}
+
+.certificate-open{
+  position:relative;width:100%;display:block;padding:0;border:0;background:none;cursor:zoom-in;text-align:inherit
+}
+.certificate-open img{transition:transform .28s var(--ease),filter .28s var(--ease)}
+.certificate-open:hover img{transform:scale(1.012);filter:brightness(.96)}
+.certificate-open>span{
+  position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+  padding:9px 12px;border-radius:999px;background:rgba(8,9,12,.82);color:#fff;
+  backdrop-filter:blur(12px);font:600 9px "Space Grotesk";letter-spacing:.08em;
+  opacity:0;transition:.22s var(--ease);white-space:nowrap
+}
+.certificate-open:hover>span,.certificate-open:focus-visible>span{opacity:1}
+.certificate-text-button{
+  border:0;background:none;padding:0;color:#141518;font:600 10px "DM Sans";cursor:pointer
+}
+.certificate-text-button:hover{text-decoration:underline}
+
+.certificate-modal{
+  position:fixed;inset:0;z-index:1000;display:none;place-items:center;padding:24px
+}
+.certificate-modal.is-open{display:grid}
+.certificate-modal-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,.84);backdrop-filter:blur(10px)
+}
+.certificate-modal-panel{
+  position:relative;z-index:1;width:min(1180px,96vw);height:min(94vh,1100px);
+  border:1px solid rgba(255,255,255,.16);border-radius:24px;background:#0b0d11;
+  box-shadow:0 35px 140px rgba(0,0,0,.55);overflow:hidden;display:grid;
+  grid-template-rows:auto 1fr
+}
+.certificate-modal-toolbar{
+  min-height:64px;padding:12px 16px;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;gap:18px;align-items:center;background:#0d1016
+}
+.certificate-modal-toolbar b{display:block;font-size:12px}
+.certificate-modal-toolbar span{display:block;margin-top:3px;color:#7f8490;font-size:10px}
+.certificate-modal-actions{display:flex;gap:8px;align-items:center}
+.certificate-modal-actions a,.certificate-modal-actions button{
+  min-height:36px;padding:0 12px;border:1px solid var(--line);border-radius:999px;
+  background:rgba(255,255,255,.03);color:#f3f4f6;font:600 9px "DM Sans";cursor:pointer
+}
+.certificate-modal-actions a:hover,.certificate-modal-actions button:hover{border-color:rgba(255,255,255,.3)}
+.certificate-full-view{
+  overflow:auto;padding:18px;display:grid;place-items:start center;background:#17191e
+}
+.certificate-full-view img{
+  width:min(100%,1240px);height:auto;max-width:none;border-radius:10px;
+  box-shadow:0 24px 80px rgba(0,0,0,.3)
+}
+body.certificate-modal-open{overflow:hidden}
+
 .certificate-card{margin:0;padding:14px;background:#e8e2d7;color:#141518}
 .certificate-card img{
   width:100%;max-height:720px;object-fit:contain;object-position:top;border-radius:14px;background:#f5f0e8
@@ -415,7 +467,7 @@ footer a{justify-self:end;color:#a9acb5}
   .feature-rows div{grid-template-columns:1fr;gap:6px}.evaluation{padding:20px}.eval-items>div{grid-template-columns:28px 1fr}.eval-items em{grid-column:2}
   .feature-gallery{margin-top:18px}.real-image{padding:8px}.image-note{right:14px;bottom:14px;font-size:7px}
   .autism-evidence-grid{grid-template-columns:1fr}.proof img{height:420px}.controlled-study{grid-template-columns:1fr}
-  .measurement-grid{grid-template-columns:1fr}.methods-grid{grid-template-columns:1fr}.experience{padding:90px 0}.experience-head{grid-template-columns:1fr}.experience-meta{grid-template-columns:1fr}.experience-layout{grid-template-columns:1fr}.experience-work{grid-template-columns:1fr}.certificate-note{grid-template-columns:1fr;gap:8px}.certificate-card figcaption{align-items:flex-start;flex-direction:column}.mission{padding-bottom:90px}.mission-card{grid-template-columns:1fr;padding:24px}.mission-tags{grid-column:auto}
+  .measurement-grid{grid-template-columns:1fr}.methods-grid{grid-template-columns:1fr}.experience{padding:90px 0}.experience-head{grid-template-columns:1fr}.experience-meta{grid-template-columns:1fr}.experience-layout{grid-template-columns:1fr}.experience-work{grid-template-columns:1fr}.certificate-note{grid-template-columns:1fr;gap:8px}.certificate-card figcaption{align-items:flex-start;flex-direction:column}.certificate-modal{padding:8px}.certificate-modal-panel{width:100%;height:96vh;border-radius:16px}.certificate-modal-toolbar{align-items:flex-start;flex-direction:column}.certificate-modal-actions{width:100%;flex-wrap:wrap}.certificate-full-view{padding:8px}.mission{padding-bottom:90px}.mission-card{grid-template-columns:1fr;padding:24px}.mission-tags{grid-column:auto}
   .contact-card{padding:24px}.contact-card h2{font-size:50px}.contact-list a{grid-template-columns:1fr;gap:5px}
   footer{grid-template-columns:1fr auto}footer span:nth-child(2){display:none}
 }
